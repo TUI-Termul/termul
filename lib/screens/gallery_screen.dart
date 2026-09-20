@@ -39,14 +39,14 @@ class GalleryScreen extends StatelessWidget {
                       ? Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Expanded(child: _LeftColumn(palette: p)),
+                            Expanded(child: _LeftColumn()),
                             const SizedBox(width: 16),
                             Expanded(child: _RightColumn(palette: p)),
                           ],
                         )
                       : Column(
                           children: [
-                            _LeftColumn(palette: p),
+                            _LeftColumn(),
                             const SizedBox(height: 16),
                             _RightColumn(palette: p),
                           ],
@@ -81,25 +81,21 @@ class _Header extends StatelessWidget {
         color: p.sidebar,
         border: Border(bottom: BorderSide(color: p.border)),
       ),
-      child: Row(
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        crossAxisAlignment: WrapCrossAlignment.center,
         children: [
-          TuiText('termul', tone: TuiTextTone.accent, bold: true, size: 16),
-          const SizedBox(width: 10),
-          TuiText('component gallery', tone: TuiTextTone.dim, size: 12),
-          const Spacer(),
-          for (final name in TermulPalette.presets.keys) ...[
-            Padding(
-              padding: const EdgeInsets.only(left: 6),
-              child: TuiButton(
-                label: name,
-                variant: themeName == name
-                    ? TuiButtonVariant.primary
-                    : TuiButtonVariant.ghost,
-                onPressed: () => onThemeChanged(name),
-              ),
+          const TuiText('termul', tone: TuiTextTone.accent, bold: true, size: 16),
+          const TuiText('component gallery', tone: TuiTextTone.dim, size: 12),
+          for (final name in TermulPalette.presets.keys)
+            TuiButton(
+              label: name,
+              variant: themeName == name
+                  ? TuiButtonVariant.primary
+                  : TuiButtonVariant.ghost,
+              onPressed: () => onThemeChanged(name),
             ),
-          ],
-          const SizedBox(width: 10),
           TuiButton(
             label: 'open shell demo',
             prefix: '▸',
@@ -134,8 +130,7 @@ class _Section extends StatelessWidget {
 }
 
 class _LeftColumn extends StatelessWidget {
-  const _LeftColumn({required this.palette});
-  final TermulPalette palette;
+  const _LeftColumn();
 
   @override
   Widget build(BuildContext context) {
