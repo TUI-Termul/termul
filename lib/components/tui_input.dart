@@ -11,6 +11,12 @@ class TuiInput extends StatefulWidget {
     this.hint = '',
     this.onSubmitted,
     this.autofocus = false,
+    this.focusNode,
+    this.keyboardType,
+    this.textInputAction = TextInputAction.send,
+    /// When true, blocks the OS soft keyboard (use with [TuiTerminalKeyboard]).
+    this.useCustomKeyboard = false,
+    this.onTap,
   });
 
   final TextEditingController? controller;
@@ -18,6 +24,11 @@ class TuiInput extends StatefulWidget {
   final String hint;
   final ValueChanged<String>? onSubmitted;
   final bool autofocus;
+  final FocusNode? focusNode;
+  final TextInputType? keyboardType;
+  final TextInputAction textInputAction;
+  final bool useCustomKeyboard;
+  final VoidCallback? onTap;
 
   @override
   State<TuiInput> createState() => _TuiInputState();
@@ -26,20 +37,23 @@ class TuiInput extends StatefulWidget {
 class _TuiInputState extends State<TuiInput> {
   late final TextEditingController _controller;
   late final FocusNode _focus;
-  bool _owned = false;
+  bool _ownedController = false;
+  bool _ownedFocus = false;
 
   @override
   void initState() {
     super.initState();
-    _owned = widget.controller == null;
+    _ownedController = widget.controller == null;
+    _ownedFocus = widget.focusNode == null;
     _controller = widget.controller ?? TextEditingController();
-    _focus = FocusNode()..addListener(() => setState(() {}));
+    _focus = widget.focusNode ?? FocusNode();
+    _focus.addListener(() => setState(() {}));
   }
 
   @override
   void dispose() {
-    _focus.dispose();
-    if (_owned) _controller.dispose();
+    if (_ownedFocus) _focus.dispose();
+    if (_ownedController) _controller.dispose();
     super.dispose();
   }
 
@@ -64,13 +78,20 @@ class _TuiInputState extends State<TuiInput> {
               controller: _controller,
               focusNode: _focus,
               autofocus: widget.autofocus,
+              // Hide OS keyboard when driving a custom terminal keyboard.
+              keyboardType: widget.useCustomKeyboard
+                  ? TextInputType.none
+                  : (widget.keyboardType ?? TextInputType.text),
+              textInputAction: widget.textInputAction,
+              showCursor: true,
+              enableInteractiveSelection: true,
               cursorColor: p.accent,
               cursorWidth: 8,
               cursorHeight: 14,
               style: TextStyle(
                 color: p.text,
                 fontSize: 13,
-                fontFamily: 'JetBrains Mono',
+                fontFamily: TermulFonts.mono,
                 height: 1.3,
               ),
               decoration: InputDecoration(
@@ -80,6 +101,10 @@ class _TuiInputState extends State<TuiInput> {
                 hintStyle: TextStyle(color: p.dim, fontSize: 13),
                 contentPadding: EdgeInsets.zero,
               ),
+              onTap: () {
+                _focus.requestFocus();
+                widget.onTap?.call();
+              },
               onSubmitted: widget.onSubmitted,
             ),
           ),

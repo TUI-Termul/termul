@@ -32,26 +32,38 @@ class _TuiButtonState extends State<TuiButton> {
     final p = TermulThemeData.of(context).palette;
     final enabled = widget.onPressed != null;
 
-    final Color fg;
-    final Color bg;
-    final Color border;
+    // OCI / Refero: primary = Paper fill + Ink label + Indigo mark square.
+    // Dark themes keep filled accent primary.
+    final ociPrimary = p.isLight && widget.variant == TuiButtonVariant.primary;
+
+    late final Color fg;
+    late final Color bg;
+    late final Color border;
 
     switch (widget.variant) {
       case TuiButtonVariant.primary:
-        fg = p.bg;
-        bg = enabled
-            ? (_pressed
-                ? p.accent.withValues(alpha: 0.85)
-                : (_hover ? p.accent.withValues(alpha: 0.92) : p.accent))
-            : p.dim;
-        border = bg;
+        if (ociPrimary) {
+          fg = enabled ? p.text : p.dim;
+          bg = enabled
+              ? (_hover ? p.bg : p.panel)
+              : p.bg;
+          border = Colors.transparent;
+        } else {
+          fg = p.bg;
+          bg = enabled
+              ? (_pressed
+                  ? p.accent.withValues(alpha: 0.85)
+                  : (_hover ? p.accent.withValues(alpha: 0.92) : p.accent))
+              : p.dim;
+          border = bg;
+        }
       case TuiButtonVariant.ghost:
-        fg = enabled ? p.text : p.dim;
+        fg = enabled ? (p.isLight ? p.accent : p.text) : p.dim;
         bg = _hover && enabled ? p.selection : Colors.transparent;
         border = p.border;
       case TuiButtonVariant.danger:
-        fg = p.bg;
-        bg = enabled ? p.red : p.dim;
+        fg = p.isLight ? p.panel : p.bg;
+        bg = enabled ? p.deep : p.dim;
         border = bg;
     }
 
@@ -65,7 +77,6 @@ class _TuiButtonState extends State<TuiButton> {
         onTap: widget.onPressed,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 80),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
             color: bg,
             border: Border.all(color: border),
@@ -73,22 +84,60 @@ class _TuiButtonState extends State<TuiButton> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (widget.prefix != null) ...[
-                Text(
-                  widget.prefix!,
-                  style: TextStyle(color: fg, fontSize: 12, height: 1.2),
+              Padding(
+                padding: EdgeInsets.only(
+                  left: ociPrimary ? 12 : 12,
+                  right: ociPrimary ? 8 : 12,
+                  top: 6,
+                  bottom: 6,
                 ),
-                const SizedBox(width: 6),
-              ],
-              Text(
-                widget.label,
-                style: TextStyle(
-                  color: fg,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  height: 1.2,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (widget.prefix != null && !ociPrimary) ...[
+                      Text(
+                        widget.prefix!,
+                        style: TextStyle(
+                          fontFamily: TermulFonts.mono,
+                          color: fg,
+                          fontSize: 11,
+                          height: 1.2,
+                          letterSpacing: 0.4,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                    ],
+                    Text(
+                      widget.label.toUpperCase(),
+                      style: TextStyle(
+                        fontFamily: TermulFonts.mono,
+                        color: fg,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                        height: 1.2,
+                        letterSpacing: 0.4,
+                      ),
+                    ),
+                  ],
                 ),
               ),
+              if (ociPrimary)
+                Container(
+                  width: 28,
+                  height: 28,
+                  color: enabled ? p.accent : p.dim,
+                  alignment: Alignment.center,
+                  child: Text(
+                    widget.prefix ?? '/',
+                    style: TextStyle(
+                      fontFamily: TermulFonts.display,
+                      color: p.panel,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      height: 1,
+                    ),
+                  ),
+                ),
             ],
           ),
         ),

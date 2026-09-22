@@ -2,9 +2,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:termul/main.dart';
 
 void main() {
-  testWidgets('gallery loads', (tester) async {
+  testWidgets('onboarding loads', (tester) async {
     await tester.pumpWidget(const TermulApp());
-    expect(find.text('termul'), findsWidgets);
-    expect(find.text('component gallery'), findsOneWidget);
+    expect(find.text('TERMUL'), findsOneWidget);
+    expect(find.textContaining('Agents that'), findsOneWidget);
+    expect(find.text('CONTINUE'), findsOneWidget);
   });
 }

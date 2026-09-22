@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
-/// Terminal-native color tokens inspired by agent multiplexers like Herdr.
+/// Terminal-native color tokens.
+///
+/// Default [oci] follows Refero "Outsource Consultants":
+/// architectural broadsheet on bone paper + indigo strike.
 @immutable
 class TermulPalette {
   const TermulPalette({
@@ -13,6 +16,7 @@ class TermulPalette {
     required this.muted,
     required this.dim,
     required this.accent,
+    required this.deep,
     required this.green,
     required this.yellow,
     required this.red,
@@ -31,6 +35,7 @@ class TermulPalette {
   final Color muted;
   final Color dim;
   final Color accent;
+  final Color deep;
   final Color green;
   final Color yellow;
   final Color red;
@@ -39,7 +44,52 @@ class TermulPalette {
   final Color magenta;
   final Color selection;
 
-  /// Catppuccin Mocha — default dark TUI look.
+  bool get isLight => bg.computeLuminance() > 0.5;
+
+  /// Outsource Consultants / Refero — bone canvas + indigo strike.
+  /// https://styles.refero.design/style/16be276a-d8ce-484e-8f7a-cbbb09f717f7
+  static const oci = TermulPalette(
+    bg: Color(0xFFE8E6E0), // Bone
+    panel: Color(0xFFFFFFFF), // Paper
+    sidebar: Color(0xFFE8E6E0),
+    surface: Color(0xFFFFFFFF),
+    border: Color(0x26000000), // Ink ~15%
+    text: Color(0xFF000000), // Ink
+    muted: Color(0xFF2A2A2A),
+    dim: Color(0xFF6B6B6B),
+    accent: Color(0xFF1925AA), // Indigo Strike
+    deep: Color(0xFF0D1355), // Deep Indigo
+    green: Color(0xFF1925AA),
+    yellow: Color(0xFF0D1355),
+    red: Color(0xFF0D1355),
+    blue: Color(0xFF1925AA),
+    cyan: Color(0xFF4A54B8),
+    magenta: Color(0xFF0D1355),
+    selection: Color(0x1A1925AA),
+  );
+
+  /// Dark companion for OCI — indigo night field + bone type.
+  static const ociDark = TermulPalette(
+    bg: Color(0xFF0B0E24),
+    panel: Color(0xFF121636),
+    sidebar: Color(0xFF0B0E24),
+    surface: Color(0xFF1A1F45),
+    border: Color(0x33E8E6E0),
+    text: Color(0xFFE8E6E0),
+    muted: Color(0xFFB8B6B0),
+    dim: Color(0xFF7A7880),
+    accent: Color(0xFF6B75FF),
+    deep: Color(0xFFE8E6E0),
+    green: Color(0xFF6B75FF),
+    yellow: Color(0xFFE8E6E0),
+    red: Color(0xFFFF6B8A),
+    blue: Color(0xFF6B75FF),
+    cyan: Color(0xFF94A0FF),
+    magenta: Color(0xFFE8E6E0),
+    selection: Color(0x331925AA),
+  );
+
+  /// Catppuccin Mocha — classic dark TUI.
   static const mocha = TermulPalette(
     bg: Color(0xFF11111B),
     panel: Color(0xFF1E1E2E),
@@ -50,6 +100,7 @@ class TermulPalette {
     muted: Color(0xFFA6ADC8),
     dim: Color(0xFF6C7086),
     accent: Color(0xFFA6E3A1),
+    deep: Color(0xFF89B4FA),
     green: Color(0xFFA6E3A1),
     yellow: Color(0xFFF9E2AF),
     red: Color(0xFFF38BA8),
@@ -70,6 +121,7 @@ class TermulPalette {
     muted: Color(0xFF7AB87A),
     dim: Color(0xFF4A704A),
     accent: Color(0xFF39FF14),
+    deep: Color(0xFF1A8A0A),
     green: Color(0xFF39FF14),
     yellow: Color(0xFFD4E84A),
     red: Color(0xFFFF6B6B),
@@ -90,6 +142,7 @@ class TermulPalette {
     muted: Color(0xFFA9B1D6),
     dim: Color(0xFF565F89),
     accent: Color(0xFF7AA2F7),
+    deep: Color(0xFF3D59A1),
     green: Color(0xFF9ECE6A),
     yellow: Color(0xFFE0AF68),
     red: Color(0xFFF7768E),
@@ -99,8 +152,16 @@ class TermulPalette {
     selection: Color(0xFF33467C),
   );
 
+  static const terminalThemes = <String, TermulPalette>{
+    'mocha': mocha,
+    'oci': oci,
+    'phosphor': phosphor,
+    'tokyo-night': tokyoNight,
+  };
+
   static const presets = <String, TermulPalette>{
     'mocha': mocha,
+    'oci': oci,
     'phosphor': phosphor,
     'tokyo-night': tokyoNight,
   };

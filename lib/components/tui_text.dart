@@ -54,11 +54,12 @@ class TuiText extends StatelessWidget {
       maxLines: maxLines,
       overflow: overflow,
       style: TextStyle(
+        fontFamily: TermulFonts.mono,
         color: color,
         fontSize: size,
-        fontWeight: bold ? FontWeight.w600 : FontWeight.w400,
-        height: 1.45,
-        letterSpacing: 0.2,
+        fontWeight: bold ? FontWeight.w500 : FontWeight.w400,
+        height: size <= 10 ? 1.3 : 1.45,
+        letterSpacing: size <= 10 ? -0.3 : 0.2,
       ),
     );
   }
