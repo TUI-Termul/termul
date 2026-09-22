@@ -33,13 +33,10 @@ Gallery of TUI components remains under **COMPONENTS** on the home header.
 
 ## What's included
 
-- **Themes:** `oci` (default — Refero Outsource Consultants: bone + indigo), `mocha`, `phosphor`, `tokyo-night`
-- **Fonts (bundled substitutes):** Space Grotesk ≈ PP Neue Montreal, JetBrains Mono ≈ GT America Mono
+- **Themes:** `oci` (default — bone + indigo), `mocha`, `phosphor`, `tokyo-night`
+- **Fonts:** Space Grotesk (display), JetBrains Mono (mono)
 - **Components:** `TuiText`, `TuiButton`, `TuiInput`, `TuiBadge`, `TuiStatusDot`, `TuiBox`, `TuiSidebar`, `TuiTabs`, `TuiPane`
 - **Screens:** component gallery + Herdr-style shell demo
-
-Style reference: [Outsource Consultants on Refero](https://styles.refero.design/style/16be276a-d8ce-484e-8f7a-cbbb09f717f7)
-
 
 ## License
 

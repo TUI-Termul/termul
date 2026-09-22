@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 
 /// Terminal-native color tokens.
 ///
-/// Default [oci] follows Refero "Outsource Consultants":
-/// architectural broadsheet on bone paper + indigo strike.
+/// Default [oci]: bone paper canvas + indigo accent.
 @immutable
 class TermulPalette {
   const TermulPalette({
@@ -46,8 +45,7 @@ class TermulPalette {
 
   bool get isLight => bg.computeLuminance() > 0.5;
 
-  /// Outsource Consultants / Refero — bone canvas + indigo strike.
-  /// https://styles.refero.design/style/16be276a-d8ce-484e-8f7a-cbbb09f717f7
+  /// Light default — bone canvas + indigo accent.
   static const oci = TermulPalette(
     bg: Color(0xFFE8E6E0), // Bone
     panel: Color(0xFFFFFFFF), // Paper
@@ -57,8 +55,8 @@ class TermulPalette {
     text: Color(0xFF000000), // Ink
     muted: Color(0xFF2A2A2A),
     dim: Color(0xFF6B6B6B),
-    accent: Color(0xFF1925AA), // Indigo Strike
-    deep: Color(0xFF0D1355), // Deep Indigo
+    accent: Color(0xFF1925AA), // Indigo
+    deep: Color(0xFF0D1355), // Deep indigo
     green: Color(0xFF1925AA),
     yellow: Color(0xFF0D1355),
     red: Color(0xFF0D1355),
@@ -68,7 +66,7 @@ class TermulPalette {
     selection: Color(0x1A1925AA),
   );
 
-  /// Dark companion for OCI — indigo night field + bone type.
+  /// Dark companion — indigo night field + bone type.
   static const ociDark = TermulPalette(
     bg: Color(0xFF0B0E24),
     panel: Color(0xFF121636),

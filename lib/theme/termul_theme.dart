@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 
 import 'termul_palette.dart';
 
-/// Bundled font families — Refero OCI substitutes.
+/// Bundled font families.
 ///
-/// - Display: Space Grotesk ≈ PP Neue Montreal
-/// - Mono: JetBrains Mono ≈ GT America Mono
+/// - Display: Space Grotesk
+/// - Mono: JetBrains Mono
 abstract final class TermulFonts {
   static const display = 'SpaceGrotesk';
   static const mono = 'JetBrainsMono';
