@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
+import 'components/tui_toast.dart';
 import 'screens/add_connection_screen.dart';
 import 'screens/gallery_screen.dart';
 import 'screens/home_screen.dart';
@@ -54,6 +55,9 @@ class _TermulAppState extends State<TermulApp> {
       theme: TermulTheme.of(TermulPalette.paper),
       darkTheme: TermulTheme.of(TermulPalette.paperDark),
       themeMode: _controller.appThemeMode,
+      builder: (context, child) => TuiToastHost(
+        child: child ?? const SizedBox.shrink(),
+      ),
       home: AnimatedSwitcher(
         duration: const Duration(milliseconds: 220),
         switchInCurve: Curves.easeOut,

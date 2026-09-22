@@ -265,18 +265,11 @@ class SettingsScreen extends StatelessWidget {
     );
 
     if (sent == true && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: p.accent,
-          content: Text(
-            'Thanks — bug report queued.',
-            style: TextStyle(
-              fontFamily: TermulFonts.mono,
-              color: p.bg,
-              fontSize: 12,
-            ),
-          ),
-        ),
+      showTuiToast(
+        context,
+        title: 'Thanks',
+        body: 'Bug report queued.',
+        type: TuiToastType.success,
       );
     }
   }

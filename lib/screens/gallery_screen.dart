@@ -358,14 +358,68 @@ class _ChoiceDemosState extends State<_ChoiceDemos> {
                   confirmVariant: TuiButtonVariant.danger,
                 );
                 if (!context.mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(ok ? 'Discarded.' : 'Kept editing.'),
-                    duration: const Duration(seconds: 1),
-                  ),
+                showTuiToast(
+                  context,
+                  title: ok ? 'Discarded' : 'Kept editing',
+                  type: ok ? TuiToastType.warning : TuiToastType.info,
                 );
               },
             ),
+          ),
+        ),
+        _GallerySection(
+          title: 'TuiToast',
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              TuiButton(
+                label: 'info',
+                variant: TuiButtonVariant.ghost,
+                onPressed: () => showTuiToast(
+                  context,
+                  title: 'Session attached',
+                  body: 'Agent panes stay alive on this host.',
+                ),
+              ),
+              TuiButton(
+                label: 'success',
+                variant: TuiButtonVariant.ghost,
+                onPressed: () => showTuiToast(
+                  context,
+                  title: 'Copied',
+                  type: TuiToastType.success,
+                ),
+              ),
+              TuiButton(
+                label: 'warning',
+                variant: TuiButtonVariant.ghost,
+                onPressed: () => showTuiToast(
+                  context,
+                  title: 'Host key changed',
+                  body: 'Verify the fingerprint before trusting.',
+                  type: TuiToastType.warning,
+                  action: TuiToastAction(
+                    label: 'Settings',
+                    onPressed: () {},
+                  ),
+                ),
+              ),
+              TuiButton(
+                label: 'error',
+                variant: TuiButtonVariant.ghost,
+                onPressed: () => showTuiToast(
+                  context,
+                  title: 'Connection refused',
+                  body: 'Nothing is listening on port 22.',
+                  type: TuiToastType.error,
+                  action: TuiToastAction(
+                    label: 'Retry',
+                    onPressed: () {},
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ],

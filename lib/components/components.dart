@@ -15,3 +15,4 @@ export 'tui_switch.dart';
 export 'tui_tabs.dart';
 export 'tui_terminal_keyboard.dart';
 export 'tui_text.dart';
+export 'tui_toast.dart';
