@@ -422,7 +422,1169 @@ class _ChoiceDemosState extends State<_ChoiceDemos> {
             ],
           ),
         ),
+        _GallerySection(
+          title: 'TuiSheet',
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              TuiButton(
+                label: 'confirm',
+                variant: TuiButtonVariant.ghost,
+                onPressed: () async {
+                  final ok = await showTuiConfirmSheet(
+                    context,
+                    title: 'host key',
+                    message: 'Trust 10.0.0.12?',
+                    detail:
+                        'First connection. Match this fingerprint on the server before trusting.',
+                    confirmLabel: 'trust',
+                    cancelLabel: 'cancel',
+                  );
+                  if (!context.mounted) return;
+                  showTuiToast(
+                    context,
+                    title: ok == true ? 'Trusted' : 'Cancelled',
+                    type: ok == true
+                        ? TuiToastType.success
+                        : TuiToastType.info,
+                  );
+                },
+              ),
+              TuiButton(
+                label: 'destructive',
+                variant: TuiButtonVariant.ghost,
+                onPressed: () => showTuiConfirmSheet(
+                  context,
+                  title: 'host key',
+                  message: 'Host key changed',
+                  detail:
+                      'Something at this address answers with a different key.',
+                  confirmLabel: 'replace key',
+                  confirmVariant: TuiButtonVariant.danger,
+                ),
+              ),
+              TuiButton(
+                label: 'error',
+                variant: TuiButtonVariant.ghost,
+                onPressed: () => showTuiErrorSheet(
+                  context,
+                  title: 'connection',
+                  message: 'Connection refused',
+                  detail: 'Nothing is listening on port 22.',
+                ),
+              ),
+              TuiButton(
+                label: 'loading',
+                variant: TuiButtonVariant.ghost,
+                onPressed: () async {
+                  showTuiLoadingSheet(
+                    context,
+                    title: 'ssh',
+                    message: 'prod-west',
+                    loadingLabel: 'Connecting…',
+                    isDismissible: true,
+                    enableDrag: true,
+                  );
+                },
+              ),
+              TuiButton(
+                label: 'choices',
+                variant: TuiButtonVariant.ghost,
+                onPressed: () async {
+                  final picked = await showTuiChoiceSheet<String>(
+                    context,
+                    title: 'tmux',
+                    message: 'Attach to session',
+                    options: const [
+                      (value: 'main', label: 'main', meta: '2 windows'),
+                      (value: 'dev', label: 'dev', meta: '1 window · attached'),
+                      (value: 'ops', label: 'ops', meta: '4 windows'),
+                    ],
+                    selected: 'dev',
+                  );
+                  if (!context.mounted || picked == null) return;
+                  showTuiToast(
+                    context,
+                    title: 'Attached',
+                    body: 'tmux session “$picked”',
+                    type: TuiToastType.success,
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+        _GallerySection(
+          title: 'TuiMenu',
+          child: Row(
+            children: [
+              TuiMenuButton<String>(
+                entries: const [
+                  TuiMenuItem(value: 'attach', label: 'Attach tmux'),
+                  TuiMenuItem(value: 'edit', label: 'Edit'),
+                  TuiMenuItem(value: 'duplicate', label: 'Duplicate'),
+                  TuiMenuDivider(),
+                  TuiMenuItem(
+                    value: 'delete',
+                    label: 'Delete',
+                    destructive: true,
+                    shortcut: '⌫',
+                  ),
+                ],
+                onSelected: (v) => showTuiToast(
+                  context,
+                  title: 'Host menu',
+                  body: v,
+                  type: v == 'delete'
+                      ? TuiToastType.warning
+                      : TuiToastType.info,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: TuiContextMenuRegion<String>(
+                  entries: const [
+                    TuiMenuItem(
+                      value: 'copy',
+                      label: 'Copy',
+                      shortcut: '⌘C',
+                    ),
+                    TuiMenuItem(
+                      value: 'paste',
+                      label: 'Paste',
+                      shortcut: '⌘V',
+                    ),
+                    TuiMenuDivider(),
+                    TuiMenuItem(
+                      value: 'link',
+                      label: 'Copy link address',
+                      enabled: false,
+                    ),
+                  ],
+                  onSelected: (v) => showTuiToast(
+                    context,
+                    title: 'Context',
+                    body: v,
+                    type: TuiToastType.success,
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: TermulThemeData.of(context).palette.border,
+                      ),
+                      color: TermulThemeData.of(context).palette.surface,
+                    ),
+                    child: Text(
+                      'Long-press or right-click this pane',
+                      style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                            color: TermulThemeData.of(context).palette.muted,
+                          ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        _GallerySection(
+          title: 'TuiTooltip',
+          child: Row(
+            children: [
+              TuiIconButton(
+                icon: '⚙',
+                tooltip: 'Settings',
+                onPressed: () => showTuiToast(
+                  context,
+                  title: 'Settings',
+                  body: 'Icon button with tooltip',
+                ),
+              ),
+              TuiIconButton(
+                icon: '×',
+                tooltip: 'Close tab',
+                onPressed: () => showTuiToast(
+                  context,
+                  title: 'Closed',
+                  type: TuiToastType.info,
+                ),
+              ),
+              TuiIconButton(
+                icon: '＋',
+                tooltip: 'New tab',
+                onPressed: () {},
+              ),
+              const SizedBox(width: 12),
+              TuiTooltip(
+                message: 'Transfers queued',
+                child: TuiBadge(label: '3 pending'),
+              ),
+            ],
+          ),
+        ),
+        _GallerySection(
+          title: 'TuiProgress',
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const TuiSpinner(label: 'Running query…', size: 14),
+              const SizedBox(height: 16),
+              const TuiProgress(
+                label: 'Uploading notes.md',
+                value: 0.42,
+              ),
+              const SizedBox(height: 12),
+              const TuiProgressBar(),
+              const SizedBox(height: 12),
+              const TuiProgress(
+                label: 'Saving',
+                error: true,
+                errorText: 'Save failed — permission denied',
+              ),
+              const SizedBox(height: 12),
+              const TuiProgressBanner(label: 'Connecting…'),
+            ],
+          ),
+        ),
+        _GallerySection(
+          title: 'TuiTransferRow',
+          child: Column(
+            children: [
+              TuiTransferRow(
+                name: 'notes.md',
+                direction: TuiTransferDirection.upload,
+                status: TuiTransferStatus.running,
+                host: 'prod-west',
+                doneBytes: 420000,
+                totalBytes: 1000000,
+                speedBytesPerSec: 82000,
+                progress: 0.42,
+                onCancel: () => showTuiToast(
+                  context,
+                  title: 'Cancel',
+                  body: 'notes.md',
+                ),
+              ),
+              Divider(
+                height: 1,
+                color: TermulThemeData.of(context).palette.border,
+              ),
+              TuiTransferRow(
+                name: 'dump.sql.gz',
+                direction: TuiTransferDirection.download,
+                status: TuiTransferStatus.done,
+                host: 'db-1',
+                doneBytes: 4800000,
+                totalBytes: 4800000,
+                speedBytesPerSec: 2100000,
+                onOpen: () => showTuiToast(
+                  context,
+                  title: 'Open',
+                  body: 'dump.sql.gz',
+                  type: TuiToastType.success,
+                ),
+              ),
+              Divider(
+                height: 1,
+                color: TermulThemeData.of(context).palette.border,
+              ),
+              TuiTransferRow(
+                name: 'secret.env',
+                direction: TuiTransferDirection.download,
+                status: TuiTransferStatus.failed,
+                host: 'prod-west',
+                error: 'permission denied',
+                onRetry: () => showTuiToast(
+                  context,
+                  title: 'Retry',
+                  body: 'secret.env',
+                  type: TuiToastType.warning,
+                ),
+              ),
+            ],
+          ),
+        ),
+        _GallerySection(
+          title: 'TuiDataGrid / TuiJsonTree',
+          child: SizedBox(
+            height: 320,
+            child: DefaultTabController(
+              length: 2,
+              child: Column(
+                children: [
+                  TabBar(
+                    labelColor: TermulThemeData.of(context).palette.accent,
+                    unselectedLabelColor:
+                        TermulThemeData.of(context).palette.dim,
+                    indicatorColor: TermulThemeData.of(context).palette.accent,
+                    labelStyle: const TextStyle(
+                      fontFamily: TermulFonts.mono,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 0.4,
+                    ),
+                    tabs: const [
+                      Tab(text: 'GRID'),
+                      Tab(text: 'JSON'),
+                    ],
+                  ),
+                  Expanded(
+                    child: TabBarView(
+                      children: [
+                        TuiDataGrid(
+                          columns: const [
+                            TuiDataGridColumn(id: 'id', label: 'id', width: 72),
+                            TuiDataGridColumn(
+                              id: 'email',
+                              label: 'email',
+                              width: 180,
+                            ),
+                            TuiDataGridColumn(
+                              id: 'role',
+                              label: 'role',
+                              width: 100,
+                            ),
+                          ],
+                          rows: const [
+                            TuiDataGridRow(
+                              id: '1',
+                              cells: [
+                                TuiDataGridCell(value: '1'),
+                                TuiDataGridCell(value: 'ada@termul.dev'),
+                                TuiDataGridCell(value: 'admin', dirty: true),
+                              ],
+                            ),
+                            TuiDataGridRow(
+                              id: '2',
+                              cells: [
+                                TuiDataGridCell(value: '2'),
+                                TuiDataGridCell(value: 'lin@termul.dev'),
+                                TuiDataGridCell(value: null),
+                              ],
+                            ),
+                            TuiDataGridRow(
+                              id: '3',
+                              isNew: true,
+                              cells: [
+                                TuiDataGridCell(value: '3'),
+                                TuiDataGridCell(value: 'new@termul.dev'),
+                                TuiDataGridCell(value: 'viewer'),
+                              ],
+                            ),
+                            TuiDataGridRow(
+                              id: '4',
+                              deleted: true,
+                              cells: [
+                                TuiDataGridCell(value: '4'),
+                                TuiDataGridCell(value: 'old@termul.dev'),
+                                TuiDataGridCell(value: 'viewer'),
+                              ],
+                            ),
+                          ],
+                          onCellTap: (r, c) => showTuiToast(
+                            context,
+                            title: 'Edit cell',
+                            body: 'row $r · col $c',
+                          ),
+                        ),
+                        ListView(
+                          padding: const EdgeInsets.only(top: 8),
+                          children: [
+                            TuiJsonCard(
+                              index: 1,
+                              data: const {
+                                '_id': {r'$oid': '66f1a2'},
+                                'email': 'ada@termul.dev',
+                                'tags': ['admin', 'beta'],
+                                'meta': {
+                                  'lastLogin': {r'$date': '2026-09-22'},
+                                  'devices': 2,
+                                },
+                              },
+                              onCopy: () => showTuiToast(
+                                context,
+                                title: 'Copied',
+                                type: TuiToastType.success,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        _GallerySection(
+          title: 'TuiDiffView',
+          child: SizedBox(
+            height: 280,
+            child: TuiDiffView(
+              split: true,
+              files: [
+                TuiDiffFile(
+                  path: 'lib/main.dart',
+                  added: 2,
+                  removed: 1,
+                  language: 'dart',
+                  rows: tuiDiffRowsToSplit(
+                    tuiDiffRowsFromUnified(
+                      '@@ -10,3 +10,4 @@\n'
+                      ' void main() {\n'
+                      '-  runApp(const App());\n'
+                      '+  WidgetsFlutterBinding.ensureInitialized();\n'
+                      '+  runApp(const TermulApp());\n'
+                      ' }\n',
+                    ),
+                  ),
+                ),
+              ],
+              onCopyPath: (_) => showTuiToast(
+                context,
+                title: 'Copied path',
+                type: TuiToastType.success,
+              ),
+            ),
+          ),
+        ),
+        const _GallerySection(
+          title: 'TuiCodeEditor / TuiMarkdownPreview',
+          child: SizedBox(
+            height: 360,
+            child: _CodeEditorDemo(),
+          ),
+        ),
+        const _GallerySection(
+          title: 'TuiFileTree',
+          child: SizedBox(
+            height: 320,
+            child: _FileTreeDemo(),
+          ),
+        ),
+        const _GallerySection(
+          title: 'TuiMagicKey',
+          child: SizedBox(
+            height: 280,
+            child: _MagicKeyDemo(),
+          ),
+        ),
+        const _GallerySection(
+          title: 'TuiSplitView / TuiTabGroupChip',
+          child: SizedBox(
+            height: 280,
+            child: _SplitDemo(),
+          ),
+        ),
+        const _GallerySection(
+          title: 'TuiChatBubble / TuiToolRow',
+          child: SizedBox(
+            height: 360,
+            child: _ChatDemo(),
+          ),
+        ),
+        const _GallerySection(
+          title: 'TuiFilterChips',
+          child: _FilterChipDemo(),
+        ),
+        const _GallerySection(
+          title: 'TuiDropdown',
+          child: _DropdownDemo(),
+        ),
+        const _GallerySection(
+          title: 'TuiCheckbox',
+          child: _CheckboxDemo(),
+        ),
+        const _GallerySection(
+          title: 'TuiSlider / TuiStepper',
+          child: _SliderDemo(),
+        ),
+        const _GallerySection(
+          title: 'TuiBrandBadge',
+          child: _BrandBadgeDemo(),
+        ),
       ],
+    );
+  }
+}
+
+class _FileTreeDemo extends StatefulWidget {
+  const _FileTreeDemo();
+
+  @override
+  State<_FileTreeDemo> createState() => _FileTreeDemoState();
+}
+
+class _FileTreeDemoState extends State<_FileTreeDemo> {
+  var _expanded = {'/src'};
+  String? _selected = '/src/main.dart';
+  var _filtering = false;
+  late final _filter = TextEditingController();
+
+  static const _children = <String, List<TuiFileNode>>{
+    '/': [
+      TuiFileNode(id: '/src', name: 'src', kind: TuiFileKind.folder),
+      TuiFileNode(id: '/README.md', name: 'README.md', kind: TuiFileKind.file),
+      TuiFileNode(id: '/.env', name: '.env', kind: TuiFileKind.file),
+    ],
+    '/src': [
+      TuiFileNode(id: '/src/main.dart', name: 'main.dart', kind: TuiFileKind.file),
+      TuiFileNode(
+        id: '/src/lib',
+        name: 'lib',
+        kind: TuiFileKind.folder,
+      ),
+      TuiFileNode(
+        id: '/src/out',
+        name: 'out',
+        kind: TuiFileKind.symlink,
+      ),
+    ],
+    '/src/lib': [
+      TuiFileNode(
+        id: '/src/lib/theme.dart',
+        name: 'theme.dart',
+        kind: TuiFileKind.file,
+      ),
+    ],
+  };
+
+  @override
+  void dispose() {
+    _filter.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final query = _filter.text.trim().toLowerCase();
+    var nodes = tuiFileTreeFlatten(
+      roots: _children['/']!,
+      expanded: _expanded,
+      childrenOf: (id) => _children[id] ?? const [],
+    );
+    if (query.isNotEmpty) {
+      nodes = nodes.where((n) => n.name.toLowerCase().contains(query)).toList();
+    }
+
+    return TuiFileTree(
+      title: 'prod-west',
+      rootLabel: 'home',
+      nodes: nodes,
+      selectedId: _selected,
+      filtering: _filtering,
+      filterController: _filter,
+      onFilterChanged: (_) => setState(() {}),
+      onToggleFilter: () => setState(() {
+        _filtering = !_filtering;
+        if (!_filtering) _filter.clear();
+      }),
+      showDotfiles: true,
+      onToggleDotfiles: () {},
+      onSelect: (n) => setState(() => _selected = n.id),
+      onToggleExpand: (n) => setState(() {
+        if (_expanded.contains(n.id)) {
+          _expanded = {..._expanded}..remove(n.id);
+        } else {
+          _expanded = {..._expanded, n.id};
+        }
+      }),
+      onNewFile: () => showTuiToast(context, title: 'New file'),
+      onNewFolder: () => showTuiToast(context, title: 'New folder'),
+      onUpload: () => showTuiToast(context, title: 'Upload'),
+      onRefresh: () => showTuiToast(context, title: 'Refresh'),
+      onCollapseAll: () => setState(() => _expanded = {}),
+      onRootPressed: () => showTuiToast(context, title: 'Change root'),
+    );
+  }
+}
+
+class _MagicKeyDemo extends StatelessWidget {
+  const _MagicKeyDemo();
+
+  @override
+  Widget build(BuildContext context) {
+    final p = TermulThemeData.of(context).palette;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: p.bg,
+        border: Border.all(color: p.border),
+      ),
+      child: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Text(
+              'Long-press the ⏎ disc for rings · drag to dock.\n'
+              'Touch-only — omit on desktop.',
+              style: TextStyle(
+                fontFamily: TermulFonts.mono,
+                fontSize: 11,
+                color: p.dim,
+                height: 1.45,
+              ),
+            ),
+          ),
+          Positioned.fill(
+            child: TuiMagicKey(
+              initialSpot: const Offset(0.82, 0.72),
+              onEmit: (label) => showTuiToast(
+                context,
+                title: 'Emit $label',
+                type: TuiToastType.info,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SplitDemo extends StatefulWidget {
+  const _SplitDemo();
+
+  @override
+  State<_SplitDemo> createState() => _SplitDemoState();
+}
+
+class _SplitDemoState extends State<_SplitDemo> {
+  late final _group = TuiTabGroup(['shell', 'files'], focused: 'shell');
+  late final Map<String, double> _weights = {
+    for (final id in _group.ids) id: 1,
+  };
+
+  Widget _pane(String title, String body) {
+    final p = TermulThemeData.of(context).palette;
+    return ColoredBox(
+      color: p.panel,
+      child: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                fontFamily: TermulFonts.mono,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: p.text,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              body,
+              style: TextStyle(
+                fontFamily: TermulFonts.mono,
+                fontSize: 11,
+                color: p.dim,
+                height: 1.4,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final p = TermulThemeData.of(context).palette;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Container(
+          height: 36,
+          color: p.sidebar,
+          padding: const EdgeInsets.symmetric(horizontal: 6),
+          child: Row(
+            children: [
+              TuiTabGroupChip(
+                stacked: _group.stacked,
+                active: true,
+                onActivate: () {},
+                onFlip: () => setState(() => _group.stacked = !_group.stacked),
+                onUngroup: () => showTuiToast(context, title: 'Ungroup'),
+                children: [
+                  for (final id in _group.ids)
+                    TuiTabChip(
+                      label: id,
+                      selected: id == _group.focused,
+                      onTap: () => setState(() => _group.focused = id),
+                    ),
+                ],
+              ),
+              TuiTabChip(label: 'chat', onTap: () {}),
+            ],
+          ),
+        ),
+        Expanded(
+          child: TuiSplitView(
+            axis: _group.axis,
+            focusedId: _group.focused,
+            onFocus: (id) => setState(() => _group.focused = id),
+            onWeightsChanged: (w) => setState(() {
+              _weights
+                ..clear()
+                ..addAll(w);
+            }),
+            panes: [
+              TuiSplitPane(
+                id: 'shell',
+                weight: _weights['shell'] ?? 1,
+                child: _pane('shell', '❯ ls -la\n❯ git status'),
+              ),
+              TuiSplitPane(
+                id: 'files',
+                weight: _weights['files'] ?? 1,
+                child: _pane('files', 'src/\nREADME.md'),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ChatDemo extends StatefulWidget {
+  const _ChatDemo();
+
+  @override
+  State<_ChatDemo> createState() => _ChatDemoState();
+}
+
+class _ChatDemoState extends State<_ChatDemo> {
+  String _selected = '1';
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        TuiChatSessionList(
+          width: 160,
+          title: 'Sessions',
+          sessions: [
+            TuiChatSession(
+              id: '0',
+              title: 'ship v0.4',
+              kind: TuiChatSessionKind.pinned,
+              subtitle: '2h ago',
+              selected: _selected == '0',
+            ),
+            TuiChatSession(
+              id: '1',
+              title: 'fix magic key',
+              kind: TuiChatSessionKind.running,
+              subtitle: 'live',
+              selected: _selected == '1',
+            ),
+            TuiChatSession(
+              id: '2',
+              title: 'readme polish',
+              kind: TuiChatSessionKind.finished,
+              subtitle: 'yesterday',
+              selected: _selected == '2',
+            ),
+          ],
+          onSelect: (s) => setState(() => _selected = s.id),
+          onNewChat: () => showTuiToast(context, title: 'New chat'),
+          onRefresh: () => showTuiToast(context, title: 'Refresh'),
+        ),
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+            children: const [
+              TuiChatBubble(text: 'Add a split view for tab groups.'),
+              TuiToolRow(
+                name: 'Read',
+                summary: 'lib/components/tui_split.dart',
+                status: TuiToolStatus.done,
+                input: 'path: lib/components/tui_split.dart',
+                result: '… 420 lines',
+                initiallyExpanded: false,
+              ),
+              TuiToolRow(
+                name: 'Bash',
+                summary: 'flutter test',
+                status: TuiToolStatus.running,
+              ),
+              TuiChatAnswer(
+                text:
+                    'Wired `TuiSplitView` with a drag grip and focus outline. '
+                    'The strip uses `TuiTabGroupChip` for the grouped tabs.',
+              ),
+              TuiChatBubble(
+                text: 'retry the flaky test',
+                delivery: TuiChatDelivery.queued,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _FilterChipDemo extends StatefulWidget {
+  const _FilterChipDemo();
+
+  @override
+  State<_FilterChipDemo> createState() => _FilterChipDemoState();
+}
+
+class _FilterChipDemoState extends State<_FilterChipDemo> {
+  var _kinds = <String>{'table', 'view'};
+  var _keyType = <String>{'string'};
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const TuiFilterLabel('Object type'),
+        TuiFilterChips<String>(
+          selected: _kinds,
+          onChanged: (s) => setState(() => _kinds = s),
+          options: const [
+            TuiFilterOption(value: 'table', label: 'Tables', count: 42),
+            TuiFilterOption(value: 'view', label: 'Views', count: 8),
+            TuiFilterOption(value: 'mat', label: 'Materialized', count: 2),
+            TuiFilterOption(value: 'foreign', label: 'Foreign', count: 1),
+          ],
+        ),
+        const SizedBox(height: 16),
+        const TuiFilterLabel('Key type (exclusive)'),
+        TuiFilterChips<String>(
+          exclusive: true,
+          allowEmpty: true,
+          selected: _keyType,
+          onChanged: (s) => setState(() => _keyType = s),
+          options: const [
+            TuiFilterOption(value: 'string', label: 'string'),
+            TuiFilterOption(value: 'hash', label: 'hash'),
+            TuiFilterOption(value: 'list', label: 'list'),
+            TuiFilterOption(value: 'set', label: 'set'),
+            TuiFilterOption(value: 'zset', label: 'zset'),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _DropdownDemo extends StatefulWidget {
+  const _DropdownDemo();
+
+  @override
+  State<_DropdownDemo> createState() => _DropdownDemoState();
+}
+
+class _DropdownDemoState extends State<_DropdownDemo> {
+  String? _jump = 'bastion';
+  String? _dbKind = 'postgres';
+
+  static const _hosts = [
+    TuiDropdownOption(
+      value: 'bastion',
+      label: 'bastion.prod',
+      subtitle: '10.0.0.2 · jump',
+    ),
+    TuiDropdownOption(
+      value: 'edge',
+      label: 'edge-west',
+      subtitle: '10.0.1.8',
+    ),
+    TuiDropdownOption(
+      value: 'db-a',
+      label: 'db-a.internal',
+      subtitle: 'disabled',
+      enabled: false,
+    ),
+    TuiDropdownOption(value: 'ci', label: 'ci-runner-3'),
+    TuiDropdownOption(value: 'staging', label: 'staging-gw'),
+    TuiDropdownOption(value: 'lab', label: 'lab-jump'),
+    TuiDropdownOption(value: 'vpn', label: 'vpn-gw'),
+    TuiDropdownOption(value: 'office', label: 'office-fw'),
+    TuiDropdownOption(value: 'spare', label: 'spare-bastion'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        TuiDropdown<String>(
+          label: 'Jump host',
+          value: _jump,
+          allowClear: true,
+          emptyLabel: 'Direct (no jump)',
+          options: _hosts,
+          onChanged: (v) => setState(() => _jump = v),
+        ),
+        const SizedBox(height: 16),
+        TuiDropdown<String>(
+          label: 'Database',
+          value: _dbKind,
+          searchable: false,
+          options: const [
+            TuiDropdownOption(value: 'postgres', label: 'PostgreSQL'),
+            TuiDropdownOption(value: 'mysql', label: 'MySQL'),
+            TuiDropdownOption(value: 'mongo', label: 'MongoDB'),
+            TuiDropdownOption(value: 'redis', label: 'Redis'),
+          ],
+          onChanged: (v) => setState(() => _dbKind = v),
+        ),
+        const SizedBox(height: 16),
+        TuiDropdown<String>(
+          label: 'Port forward host',
+          value: null,
+          hint: 'Choose a host…',
+          errorText: 'Required for local forwards',
+          options: const [
+            TuiDropdownOption(value: 'a', label: 'prod-west'),
+            TuiDropdownOption(value: 'b', label: 'prod-east'),
+          ],
+          onChanged: null,
+          enabled: false,
+        ),
+      ],
+    );
+  }
+}
+
+class _CheckboxDemo extends StatefulWidget {
+  const _CheckboxDemo();
+
+  @override
+  State<_CheckboxDemo> createState() => _CheckboxDemoState();
+}
+
+class _CheckboxDemoState extends State<_CheckboxDemo> {
+  var _status = true;
+  var _created = false;
+  bool? _all; // indeterminate when null
+
+  @override
+  Widget build(BuildContext context) {
+    final p = TermulThemeData.of(context).palette;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        TuiCheckbox(
+          label: 'Include status filter',
+          value: _status,
+          onChanged: (v) => setState(() => _status = v ?? false),
+        ),
+        const SizedBox(height: 12),
+        TuiCheckboxRow(
+          value: _created,
+          onChanged: (v) => setState(() => _created = v ?? false),
+          child: Text(
+            'created_at  ≥  2026-01-01',
+            style: TextStyle(
+              fontFamily: TermulFonts.mono,
+              fontSize: 12,
+              color: p.text,
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        TuiCheckbox(
+          label: 'Select all rows (tristate)',
+          value: _all,
+          tristate: true,
+          onChanged: (v) => setState(() => _all = v),
+        ),
+        const SizedBox(height: 12),
+        const TuiCheckbox(
+          label: 'Disabled',
+          value: true,
+          onChanged: null,
+        ),
+      ],
+    );
+  }
+}
+
+class _SliderDemo extends StatefulWidget {
+  const _SliderDemo();
+
+  @override
+  State<_SliderDemo> createState() => _SliderDemoState();
+}
+
+class _SliderDemoState extends State<_SliderDemo> {
+  var _terminal = 14.0;
+  var _editor = 13.0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        TuiSlider(
+          label: 'Terminal font size',
+          value: _terminal,
+          min: 9,
+          max: 24,
+          divisions: 15,
+          valueLabel: '${_terminal.round()}px',
+          onChanged: (v) => setState(() => _terminal = v),
+        ),
+        const SizedBox(height: 20),
+        TuiStepper(
+          label: 'Editor text',
+          value: _editor,
+          min: 9,
+          max: 24,
+          step: 1,
+          valueLabel: '${_editor.round()}px',
+          onChanged: (v) => setState(() => _editor = v),
+        ),
+        const SizedBox(height: 20),
+        const TuiSlider(
+          label: 'Disabled',
+          value: 16,
+          min: 9,
+          max: 24,
+          valueLabel: '16px',
+          onChanged: null,
+        ),
+      ],
+    );
+  }
+}
+
+class _BrandBadgeDemo extends StatelessWidget {
+  const _BrandBadgeDemo();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Wrap(
+      spacing: 16,
+      runSpacing: 16,
+      children: [
+        TuiBrandBadge(
+          brand: TuiBrand.ubuntu,
+          version: '24.04',
+          active: true,
+        ),
+        TuiBrandBadge(
+          brand: TuiBrand.debian,
+          version: '12',
+        ),
+        TuiBrandBadge(
+          brand: TuiBrand.macos,
+          version: '15.1',
+          active: true,
+        ),
+        TuiBrandBadge(brand: TuiBrand.arch),
+        TuiBrandBadge(brand: TuiBrand.postgres, version: '16'),
+        TuiBrandBadge(brand: TuiBrand.mongo),
+        TuiBrandBadge(brand: TuiBrand.redis, active: true),
+        TuiBrandBadge(),
+      ],
+    );
+  }
+}
+
+class _CodeEditorDemo extends StatefulWidget {
+  const _CodeEditorDemo();
+
+  @override
+  State<_CodeEditorDemo> createState() => _CodeEditorDemoState();
+}
+
+class _CodeEditorDemoState extends State<_CodeEditorDemo> {
+  var _mode = TuiCodeViewMode.source;
+  var _findOpen = true;
+  late final _find = TextEditingController(text: 'Termul');
+  late final _replace = TextEditingController();
+
+  static const _md = '''
+# README
+
+Termul file tab — **source** or rendered preview.
+
+```dart
+void main() => runApp(const TermulApp());
+```
+
+- Line numbers
+- Find / replace
+- Binary + dirty states
+
+![diagram](assets/flow.png)
+''';
+
+  @override
+  void dispose() {
+    _find.dispose();
+    _replace.dispose();
+    super.dispose();
+  }
+
+  List<TuiCodeLine> _lines(TermulPalette p) {
+    final raw = _md.trim().split('\n');
+    return [
+      for (var i = 0; i < raw.length; i++)
+        TuiCodeLine(
+          number: i + 1,
+          text: raw[i],
+          spans: raw[i].startsWith('#')
+              ? TextSpan(
+                  text: raw[i],
+                  style: TextStyle(color: p.accent, fontWeight: FontWeight.w600),
+                )
+              : raw[i].startsWith('```')
+                  ? TextSpan(text: raw[i], style: TextStyle(color: p.cyan))
+                  : null,
+        ),
+    ];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final p = TermulThemeData.of(context).palette;
+    return TuiCodeEditor(
+      path: 'docs/README.md',
+      subtitle: 'docs',
+      dirty: true,
+      showModeToggle: true,
+      mode: _mode,
+      onModeChanged: (m) => setState(() => _mode = m),
+      highlightLine: 3,
+      findBar: _findOpen
+          ? TuiFindBar(
+              findController: _find,
+              replaceController: _replace,
+              replaceMode: true,
+              matchLabel: '1/2',
+              onPrevious: () {},
+              onNext: () {},
+              onToggleReplace: () {},
+              onClose: () => setState(() => _findOpen = false),
+              onReplace: () {},
+              onReplaceAll: () {},
+            )
+          : null,
+      lines: _lines(p),
+      previewChild: TuiMarkdownPreview(
+        blocks: tuiMarkdownBlocksFrom(
+          _md,
+          onCopyCode: (code, _) => showTuiToast(
+            context,
+            title: 'Copied',
+            body: '${code.length} chars',
+            type: TuiToastType.success,
+          ),
+        ),
+      ),
     );
   }
 }

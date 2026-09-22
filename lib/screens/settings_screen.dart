@@ -179,90 +179,61 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Future<void> _openBugReport(BuildContext context) async {
-    final p = TermulThemeData.of(context).palette;
     final note = TextEditingController();
-    final sent = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: p.panel,
+    final sent = await showTuiSheet<bool>(
+      context,
       builder: (ctx) {
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 24,
-            right: 24,
-            top: 20,
-            bottom: MediaQuery.viewInsetsOf(ctx).bottom + 24,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                'Report a bug',
-                style: Theme.of(ctx).textTheme.headlineMedium!.copyWith(
-                      color: p.accent,
-                      fontSize: 22,
-                    ),
+        final p = TermulThemeData.of(ctx).palette;
+        return TuiSheet(
+          title: 'report a bug',
+          message: 'What broke?',
+          detail: 'Steps to reproduce help most.',
+          actions: [
+            TuiButton(
+              label: 'cancel',
+              variant: TuiButtonVariant.ghost,
+              onPressed: () => Navigator.pop(ctx, false),
+            ),
+            TuiButton(
+              label: 'submit',
+              prefix: '▸',
+              onPressed: () {
+                if (note.text.trim().isEmpty) return;
+                Navigator.pop(ctx, true);
+              },
+            ),
+          ],
+          child: Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              border: Border.all(color: p.border),
+              color: p.bg,
+            ),
+            child: TextField(
+              controller: note,
+              maxLines: 5,
+              autofocus: true,
+              cursorColor: p.accent,
+              style: TextStyle(
+                fontFamily: TermulFonts.mono,
+                fontSize: 13,
+                color: p.text,
               ),
-              const SizedBox(height: 8),
-              Text(
-                'What broke? Steps to reproduce help most.',
-                style: Theme.of(ctx).textTheme.bodySmall!.copyWith(
-                      color: p.muted,
-                    ),
-              ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  border: Border.all(color: p.border),
-                  color: p.bg,
-                ),
-                child: TextField(
-                  controller: note,
-                  maxLines: 5,
-                  autofocus: true,
-                  cursorColor: p.accent,
-                  style: TextStyle(
-                    fontFamily: TermulFonts.mono,
-                    fontSize: 13,
-                    color: p.text,
-                  ),
-                  decoration: InputDecoration(
-                    border: InputBorder.none,
-                    hintText: 'Describe the bug…',
-                    hintStyle: TextStyle(
-                      fontFamily: TermulFonts.mono,
-                      color: p.dim,
-                      fontSize: 13,
-                    ),
-                  ),
+              decoration: InputDecoration(
+                border: InputBorder.none,
+                hintText: 'Describe the bug…',
+                hintStyle: TextStyle(
+                  fontFamily: TermulFonts.mono,
+                  color: p.dim,
+                  fontSize: 13,
                 ),
               ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  TuiButton(
-                    label: 'cancel',
-                    variant: TuiButtonVariant.ghost,
-                    onPressed: () => Navigator.pop(ctx, false),
-                  ),
-                  const Spacer(),
-                  TuiButton(
-                    label: 'submit',
-                    prefix: '▸',
-                    onPressed: () {
-                      if (note.text.trim().isEmpty) return;
-                      Navigator.pop(ctx, true);
-                    },
-                  ),
-                ],
-              ),
-            ],
+            ),
           ),
         );
       },
     );
+    note.dispose();
 
     if (sent == true && context.mounted) {
       showTuiToast(

@@ -12,7 +12,6 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final p = TermulThemeData.of(context).palette;
     final empty = controller.connections.isEmpty;
 
     return Scaffold(
@@ -48,18 +47,7 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
             if (controller.connecting)
-              Container(
-                color: p.accent,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                child: Text(
-                  'CONNECTING…',
-                  style: Theme.of(context).textTheme.labelSmall!.copyWith(
-                        color: p.bg,
-                        letterSpacing: 0.6,
-                      ),
-                ),
-              ),
+              const TuiProgressBanner(label: 'Connecting…'),
           ],
         ),
       ),
