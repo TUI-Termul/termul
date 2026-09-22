@@ -28,29 +28,34 @@ class TuiBox extends StatelessWidget {
     final border = p.border;
     final bg = fill ?? p.panel;
 
-    Widget content = Column(
+    final body = DecoratedBox(
+      decoration: BoxDecoration(
+        color: bg,
+        border: Border.symmetric(vertical: BorderSide(color: border)),
+      ),
+      child: Padding(padding: padding, child: child),
+    );
+
+    if (expanded) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _TopBorder(title: title, color: border, accent: p.accent),
+          Expanded(child: body),
+          _BottomBorder(footer: footer, color: border, muted: p.dim),
+        ],
+      );
+    }
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _TopBorder(title: title, color: border, accent: p.accent),
-        Expanded(
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: bg,
-              border: Border.symmetric(
-                vertical: BorderSide(color: border),
-              ),
-            ),
-            child: Padding(padding: padding, child: child),
-          ),
-        ),
+        body,
         _BottomBorder(footer: footer, color: border, muted: p.dim),
       ],
     );
-
-    if (!expanded) {
-      content = IntrinsicHeight(child: content);
-    }
-    return content;
   }
 }
 

@@ -62,7 +62,10 @@ class _TuiInputState extends State<TuiInput> {
     final p = TermulThemeData.of(context).palette;
     final focused = _focus.hasFocus;
 
-    return AnimatedContainer(
+    return Semantics(
+      textField: true,
+      label: widget.hint.isNotEmpty ? widget.hint : 'command input',
+      child: AnimatedContainer(
       duration: const Duration(milliseconds: 100),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
@@ -110,6 +113,7 @@ class _TuiInputState extends State<TuiInput> {
           ),
         ],
       ),
+    ),
     );
   }
 }

@@ -250,72 +250,18 @@ class _ConnectionRow extends StatefulWidget {
 class _ConnectionRowState extends State<_ConnectionRow> {
   Future<void> _confirmRemove() async {
     if (!widget.enabled) return;
-    final p = TermulThemeData.of(context).palette;
     final name = widget.connection.displayName;
 
-    final confirmed = await showDialog<bool>(
-      context: context,
-      barrierColor: p.text.withValues(alpha: 0.35),
-      builder: (ctx) {
-        return Dialog(
-          backgroundColor: p.panel,
-          shape: const RoundedRectangleBorder(),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 360),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    'REMOVE HOST',
-                    style: Theme.of(ctx).textTheme.labelSmall!.copyWith(
-                          color: p.accent,
-                          letterSpacing: 0.4,
-                        ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Remove $name?',
-                    style: Theme.of(ctx).textTheme.headlineMedium!.copyWith(
-                          color: p.text,
-                          fontSize: 22,
-                        ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'This connection will be deleted from the list. You can add it again later.',
-                    style: Theme.of(ctx).textTheme.bodySmall!.copyWith(
-                          color: p.muted,
-                          height: 1.45,
-                        ),
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    children: [
-                      TuiButton(
-                        label: 'cancel',
-                        variant: TuiButtonVariant.ghost,
-                        onPressed: () => Navigator.pop(ctx, false),
-                      ),
-                      const Spacer(),
-                      TuiButton(
-                        label: 'remove',
-                        variant: TuiButtonVariant.danger,
-                        onPressed: () => Navigator.pop(ctx, true),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
+    final confirmed = await showTuiConfirmDialog(
+      context,
+      title: 'remove host',
+      message: 'Remove $name?',
+      detail:
+          'This connection will be deleted from the list. You can add it again later.',
+      confirmLabel: 'remove',
     );
 
-    if (confirmed == true && mounted) {
+    if (confirmed && mounted) {
       widget.onRemove();
     }
   }

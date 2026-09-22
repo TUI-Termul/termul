@@ -15,6 +15,7 @@ enum TuiTextTone {
   magenta,
 }
 
+/// Mono body line — primary typography primitive for panes and chrome.
 class TuiText extends StatelessWidget {
   const TuiText(
     this.data, {

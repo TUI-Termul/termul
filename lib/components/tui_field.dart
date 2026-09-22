@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../theme/termul_theme.dart';
 
-/// Form field styled for OCI / Termul — paper surface, hairline border, mono label.
+/// Form field — paper surface, hairline border, mono label.
 class TuiField extends StatelessWidget {
   const TuiField({
     super.key,
@@ -31,7 +31,10 @@ class TuiField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = TermulThemeData.of(context).palette;
-    return Column(
+    return Semantics(
+      textField: true,
+      label: label,
+      child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
@@ -76,6 +79,7 @@ class TuiField extends StatelessWidget {
           ),
         ),
       ],
+    ),
     );
   }
 }

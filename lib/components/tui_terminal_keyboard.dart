@@ -19,7 +19,7 @@ enum TermKey {
   hide,
 }
 
-/// On-screen terminal keyboard — OCI flat / mono chrome.
+/// On-screen terminal keyboard — flat / mono chrome.
 /// Suppresses the system soft keyboard; drive a [TextEditingController] instead.
 class TuiTerminalKeyboard extends StatefulWidget {
   const TuiTerminalKeyboard({
@@ -254,7 +254,6 @@ class _Key extends StatelessWidget {
     required this.label,
     required this.onTap,
     this.flex = 10,
-    this.width,
     this.active = false,
     this.accent = false,
   });
@@ -262,7 +261,6 @@ class _Key extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
   final int flex;
-  final double? width;
   final bool active;
   final bool accent;
 
@@ -280,9 +278,11 @@ class _Key extends StatelessWidget {
         color: bg,
         child: InkWell(
           onTap: onTap,
-          child: Container(
+          child: Semantics(
+            button: true,
+            label: label,
+            child: Container(
             height: 40,
-            width: width,
             alignment: Alignment.center,
             decoration: BoxDecoration(
               border: Border.all(color: p.border),
@@ -298,11 +298,11 @@ class _Key extends StatelessWidget {
               ),
             ),
           ),
+          ),
         ),
       ),
     );
 
-    if (width != null) return child;
     return Expanded(flex: flex, child: child);
   }
 }

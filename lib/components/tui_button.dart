@@ -5,6 +5,7 @@ import 'tui_text.dart';
 
 enum TuiButtonVariant { primary, ghost, danger }
 
+/// Tappable chrome control — paper primary on light themes.
 class TuiButton extends StatefulWidget {
   const TuiButton({
     super.key,
@@ -32,7 +33,7 @@ class _TuiButtonState extends State<TuiButton> {
     final p = TermulThemeData.of(context).palette;
     final enabled = widget.onPressed != null;
 
-    // OCI / Refero: primary = Paper fill + Ink label + Indigo mark square.
+    // Light primary: paper fill + ink label + indigo mark square.
     // Dark themes keep filled accent primary.
     final ociPrimary = p.isLight && widget.variant == TuiButtonVariant.primary;
 
@@ -67,7 +68,11 @@ class _TuiButtonState extends State<TuiButton> {
         border = bg;
     }
 
-    return MouseRegion(
+    return Semantics(
+      button: true,
+      enabled: enabled,
+      label: widget.label,
+      child: MouseRegion(
       onEnter: (_) => setState(() => _hover = true),
       onExit: (_) => setState(() => _hover = false),
       child: GestureDetector(
@@ -142,10 +147,12 @@ class _TuiButtonState extends State<TuiButton> {
           ),
         ),
       ),
+    ),
     );
   }
 }
 
+/// Keyboard chord hint: boxed keys + dim action label.
 class TuiKeyHint extends StatelessWidget {
   const TuiKeyHint({super.key, required this.keys, required this.label});
 
@@ -155,20 +162,23 @@ class TuiKeyHint extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = TermulThemeData.of(context).palette;
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-          decoration: BoxDecoration(
-            border: Border.all(color: p.border),
-            color: p.surface,
+    return Semantics(
+      label: '$keys $label',
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              border: Border.all(color: p.border),
+              color: p.surface,
+            ),
+            child: TuiText(keys, tone: TuiTextTone.accent, size: 11, bold: true),
           ),
-          child: TuiText(keys, tone: TuiTextTone.accent, size: 11, bold: true),
-        ),
-        const SizedBox(width: 6),
-        TuiText(label, tone: TuiTextTone.dim, size: 11),
-      ],
+          const SizedBox(width: 6),
+          TuiText(label, tone: TuiTextTone.dim, size: 11),
+        ],
+      ),
     );
   }
 }

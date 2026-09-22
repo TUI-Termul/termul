@@ -58,9 +58,9 @@ class SettingsScreen extends StatelessWidget {
                         ),
                   ),
                   const SizedBox(height: 8),
-                  Container(height: 1, color: p.border),
+                  const TuiDivider(),
                   const SizedBox(height: 28),
-                  _SectionLabel(title: 'system theme'),
+                  const TuiSectionLabel('system theme'),
                   const SizedBox(height: 12),
                   _ChoiceRow(
                     options: const [
@@ -72,9 +72,9 @@ class SettingsScreen extends StatelessWidget {
                     onSelect: controller.setAppThemeMode,
                   ),
                   const SizedBox(height: 28),
-                  Container(height: 1, color: p.border),
+                  const TuiDivider(),
                   const SizedBox(height: 28),
-                  _SectionLabel(title: 'terminal theme'),
+                  const TuiSectionLabel('terminal theme'),
                   const SizedBox(height: 12),
                   Wrap(
                     spacing: 8,
@@ -93,9 +93,9 @@ class SettingsScreen extends StatelessWidget {
                   const SizedBox(height: 12),
                   _TerminalPreview(controller: controller),
                   const SizedBox(height: 28),
-                  Container(height: 1, color: p.border),
+                  const TuiDivider(),
                   const SizedBox(height: 28),
-                  _SectionLabel(title: 'terminal font size'),
+                  const TuiSectionLabel('terminal font size'),
                   const SizedBox(height: 12),
                   Wrap(
                     spacing: 8,
@@ -113,7 +113,7 @@ class SettingsScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 28),
-                  _SectionLabel(title: 'terminal font'),
+                  const TuiSectionLabel('terminal font'),
                   const SizedBox(height: 12),
                   for (final entry in TerminalFonts.options.entries) ...[
                     _FontOption(
@@ -123,21 +123,21 @@ class SettingsScreen extends StatelessWidget {
                       onTap: () =>
                           controller.setTerminalFontFamily(entry.key),
                     ),
-                    Container(height: 1, color: p.border),
+                    const TuiDivider(),
                   ],
                   const SizedBox(height: 28),
-                  _SectionLabel(title: 'notifications'),
+                  const TuiSectionLabel('notifications'),
                   const SizedBox(height: 12),
-                  _ToggleRow(
+                  TuiSwitch(
                     label: 'Agent alerts',
-                    hint: 'Blocked / done / needs input',
+                    hint: 'BLOCKED / DONE / NEEDS INPUT',
                     value: controller.notificationsEnabled,
                     onChanged: controller.setNotificationsEnabled,
                   ),
                   const SizedBox(height: 28),
-                  Container(height: 1, color: p.border),
+                  const TuiDivider(),
                   const SizedBox(height: 28),
-                  _SectionLabel(title: 'support'),
+                  const TuiSectionLabel('support'),
                   const SizedBox(height: 12),
                   Align(
                     alignment: Alignment.centerLeft,
@@ -154,6 +154,20 @@ class SettingsScreen extends StatelessWidget {
                           color: p.dim,
                           height: 1.4,
                         ),
+                  ),
+                  const SizedBox(height: 32),
+                  const TuiDivider(),
+                  const SizedBox(height: 16),
+                  GestureDetector(
+                    onTap: controller.openGallery,
+                    behavior: HitTestBehavior.opaque,
+                    child: Text(
+                      'COMPONENT GALLERY →',
+                      style: Theme.of(context).textTheme.labelSmall!.copyWith(
+                            color: p.dim,
+                            letterSpacing: 0.4,
+                          ),
+                    ),
                   ),
                 ],
               ),
@@ -268,24 +282,6 @@ class SettingsScreen extends StatelessWidget {
   }
 }
 
-class _SectionLabel extends StatelessWidget {
-  const _SectionLabel({required this.title});
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    final p = TermulThemeData.of(context).palette;
-    return Text(
-      title.toUpperCase(),
-      style: Theme.of(context).textTheme.labelSmall!.copyWith(
-            color: p.accent,
-            fontWeight: FontWeight.w500,
-            letterSpacing: 0.4,
-          ),
-    );
-  }
-}
-
 class _ChoiceRow<T> extends StatelessWidget {
   const _ChoiceRow({
     required this.options,
@@ -359,69 +355,6 @@ class _FontOption extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _ToggleRow extends StatelessWidget {
-  const _ToggleRow({
-    required this.label,
-    required this.hint,
-    required this.value,
-    required this.onChanged,
-  });
-
-  final String label;
-  final String hint;
-  final bool value;
-  final ValueChanged<bool> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final p = TermulThemeData.of(context).palette;
-    return Row(
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: Theme.of(context).textTheme.headlineMedium!.copyWith(
-                      color: p.accent,
-                      fontSize: 18,
-                    ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                hint.toUpperCase(),
-                style: Theme.of(context).textTheme.labelSmall!.copyWith(
-                      color: p.dim,
-                      letterSpacing: 0.3,
-                    ),
-              ),
-            ],
-          ),
-        ),
-        GestureDetector(
-          onTap: () => onChanged(!value),
-          child: Container(
-            width: 52,
-            height: 28,
-            padding: const EdgeInsets.all(3),
-            decoration: BoxDecoration(
-              color: value ? p.accent : p.panel,
-              border: Border.all(color: value ? p.accent : p.border),
-            ),
-            alignment: value ? Alignment.centerRight : Alignment.centerLeft,
-            child: Container(
-              width: 20,
-              height: 20,
-              color: value ? p.panel : p.dim,
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

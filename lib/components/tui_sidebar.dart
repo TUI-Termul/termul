@@ -175,12 +175,16 @@ class _RowState extends State<_Row> {
       onExit: (_) => setState(() => _hover = false),
       child: GestureDetector(
         onTap: widget.onTap,
-        child: AnimatedContainer(
+        child: Semantics(
+          button: true,
+          selected: widget.selected,
+          child: AnimatedContainer(
           duration: const Duration(milliseconds: 80),
           margin: const EdgeInsets.symmetric(vertical: 1),
           padding: EdgeInsets.fromLTRB(8 + widget.indent, 6, 8, 6),
           decoration: BoxDecoration(color: bg),
           child: widget.child,
+        ),
         ),
       ),
     );

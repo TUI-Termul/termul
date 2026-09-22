@@ -70,7 +70,11 @@ class _TabState extends State<_Tab> {
       onExit: (_) => setState(() => _hover = false),
       child: GestureDetector(
         onTap: widget.onTap,
-        child: Container(
+        child: Semantics(
+          button: true,
+          selected: widget.selected,
+          label: widget.label,
+          child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14),
           alignment: Alignment.center,
           decoration: BoxDecoration(
@@ -90,6 +94,7 @@ class _TabState extends State<_Tab> {
             bold: widget.selected,
             tone: widget.selected ? TuiTextTone.accent : TuiTextTone.muted,
           ),
+        ),
         ),
       ),
     );
