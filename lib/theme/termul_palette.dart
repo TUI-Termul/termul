@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 /// Terminal-native color tokens.
 ///
-/// Default [oci]: bone paper canvas + indigo accent.
+/// Default [paper]: bone paper canvas + indigo accent.
 @immutable
 class TermulPalette {
   const TermulPalette({
@@ -46,7 +46,7 @@ class TermulPalette {
   bool get isLight => bg.computeLuminance() > 0.5;
 
   /// Light default — bone canvas + indigo accent.
-  static const oci = TermulPalette(
+  static const paper = TermulPalette(
     bg: Color(0xFFE8E6E0), // Bone
     panel: Color(0xFFFFFFFF), // Paper
     sidebar: Color(0xFFE8E6E0),
@@ -67,7 +67,7 @@ class TermulPalette {
   );
 
   /// Dark companion — indigo night field + bone type.
-  static const ociDark = TermulPalette(
+  static const paperDark = TermulPalette(
     bg: Color(0xFF0B0E24),
     panel: Color(0xFF121636),
     sidebar: Color(0xFF0B0E24),
@@ -152,14 +152,14 @@ class TermulPalette {
 
   static const terminalThemes = <String, TermulPalette>{
     'mocha': mocha,
-    'oci': oci,
+    'paper': paper,
     'phosphor': phosphor,
     'tokyo-night': tokyoNight,
   };
 
   static const presets = <String, TermulPalette>{
     'mocha': mocha,
-    'oci': oci,
+    'paper': paper,
     'phosphor': phosphor,
     'tokyo-night': tokyoNight,
   };

@@ -26,7 +26,7 @@ class TermulApp extends StatefulWidget {
 
 class _TermulAppState extends State<TermulApp> {
   final TermulController _controller = TermulController();
-  String _galleryTheme = 'oci';
+  String _galleryTheme = 'paper';
   bool _shellDemo = false;
 
   @override
@@ -51,8 +51,8 @@ class _TermulAppState extends State<TermulApp> {
       title: 'Termul',
       debugShowCheckedModeBanner: false,
       scrollBehavior: const _TermulScrollBehavior(),
-      theme: TermulTheme.of(TermulPalette.oci),
-      darkTheme: TermulTheme.of(TermulPalette.ociDark),
+      theme: TermulTheme.of(TermulPalette.paper),
+      darkTheme: TermulTheme.of(TermulPalette.paperDark),
       themeMode: _controller.appThemeMode,
       home: AnimatedSwitcher(
         duration: const Duration(milliseconds: 220),

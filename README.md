@@ -33,7 +33,7 @@ Gallery of TUI components remains under **COMPONENTS** on the home header.
 
 ## What's included
 
-- **Themes:** `oci` (default — bone + indigo), `mocha`, `phosphor`, `tokyo-night`
+- **Themes:** `paper` (default — bone + indigo), `mocha`, `phosphor`, `tokyo-night`
 - **Fonts:** Space Grotesk (display), JetBrains Mono (mono)
 - **Components:** `TuiText`, `TuiButton`, `TuiInput`, `TuiBadge`, `TuiStatusDot`, `TuiBox`, `TuiSidebar`, `TuiTabs`, `TuiPane`
 - **Screens:** component gallery + Herdr-style shell demo

@@ -35,7 +35,7 @@ class _TuiButtonState extends State<TuiButton> {
 
     // Light primary: paper fill + ink label + indigo mark square.
     // Dark themes keep filled accent primary.
-    final ociPrimary = p.isLight && widget.variant == TuiButtonVariant.primary;
+    final lightPrimary = p.isLight && widget.variant == TuiButtonVariant.primary;
 
     late final Color fg;
     late final Color bg;
@@ -43,7 +43,7 @@ class _TuiButtonState extends State<TuiButton> {
 
     switch (widget.variant) {
       case TuiButtonVariant.primary:
-        if (ociPrimary) {
+        if (lightPrimary) {
           fg = enabled ? p.text : p.dim;
           bg = enabled
               ? (_hover ? p.bg : p.panel)
@@ -91,15 +91,15 @@ class _TuiButtonState extends State<TuiButton> {
             children: [
               Padding(
                 padding: EdgeInsets.only(
-                  left: ociPrimary ? 12 : 12,
-                  right: ociPrimary ? 8 : 12,
+                  left: lightPrimary ? 12 : 12,
+                  right: lightPrimary ? 8 : 12,
                   top: 6,
                   bottom: 6,
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    if (widget.prefix != null && !ociPrimary) ...[
+                    if (widget.prefix != null && !lightPrimary) ...[
                       Text(
                         widget.prefix!,
                         style: TextStyle(
@@ -126,7 +126,7 @@ class _TuiButtonState extends State<TuiButton> {
                   ],
                 ),
               ),
-              if (ociPrimary)
+              if (lightPrimary)
                 Container(
                   width: 28,
                   height: 28,
