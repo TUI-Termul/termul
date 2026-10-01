@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../theme/termul_theme.dart';
+import 'tui_banner.dart';
 
 /// Column header for [TuiDataGrid].
 class TuiDataGridColumn {
@@ -87,18 +88,10 @@ class TuiDataGrid extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (errorBanner != null && errorBanner!.isNotEmpty)
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            color: p.isLight ? p.deep : p.red.withValues(alpha: 0.2),
-            child: Text(
-              errorBanner!,
-              style: TextStyle(
-                fontFamily: TermulFonts.mono,
-                fontSize: 12,
-                color: p.isLight ? p.panel : p.red,
-              ),
-            ),
+          TuiBanner(
+            message: errorBanner!,
+            tone: TuiBannerTone.danger,
+            dense: true,
           ),
         Expanded(
           child: Scrollbar(

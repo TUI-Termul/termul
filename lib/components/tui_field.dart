@@ -10,22 +10,30 @@ class TuiField extends StatelessWidget {
     required this.label,
     required this.controller,
     this.hint,
+    this.helper,
     this.obscure = false,
     this.keyboardType,
     this.textInputAction,
     this.inputFormatters,
     this.autofocus = false,
+    this.autocorrect = true,
+    this.enableSuggestions = true,
     this.onSubmitted,
   });
 
   final String label;
   final TextEditingController controller;
   final String? hint;
+
+  /// Optional muted line under the box (what the field is for).
+  final String? helper;
   final bool obscure;
   final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
   final List<TextInputFormatter>? inputFormatters;
   final bool autofocus;
+  final bool autocorrect;
+  final bool enableSuggestions;
   final ValueChanged<String>? onSubmitted;
 
   @override
@@ -35,51 +43,65 @@ class TuiField extends StatelessWidget {
       textField: true,
       label: label,
       child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          label.toUpperCase(),
-          style: Theme.of(context).textTheme.labelSmall!.copyWith(
-                color: p.accent,
-                fontWeight: FontWeight.w500,
-                letterSpacing: 0.4,
-              ),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-          decoration: BoxDecoration(
-            color: p.panel,
-            border: Border.all(color: p.border),
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            label.toUpperCase(),
+            style: Theme.of(context).textTheme.labelSmall!.copyWith(
+                  color: p.accent,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 0.4,
+                ),
           ),
-          child: TextField(
-            controller: controller,
-            obscureText: obscure,
-            autofocus: autofocus,
-            keyboardType: keyboardType,
-            textInputAction: textInputAction,
-            inputFormatters: inputFormatters,
-            cursorColor: p.accent,
-            style: TextStyle(
-              fontFamily: TermulFonts.mono,
-              fontSize: 14,
-              color: p.text,
-              height: 1.4,
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+            decoration: BoxDecoration(
+              color: p.panel,
+              border: Border.all(color: p.border),
             ),
-            decoration: InputDecoration(
-              border: InputBorder.none,
-              hintText: hint,
-              hintStyle: TextStyle(
+            child: TextField(
+              controller: controller,
+              obscureText: obscure,
+              autofocus: autofocus,
+              autocorrect: autocorrect,
+              enableSuggestions: enableSuggestions,
+              keyboardType: keyboardType,
+              textInputAction: textInputAction,
+              inputFormatters: inputFormatters,
+              cursorColor: p.accent,
+              style: TextStyle(
                 fontFamily: TermulFonts.mono,
                 fontSize: 14,
+                color: p.text,
+                height: 1.4,
+              ),
+              decoration: InputDecoration(
+                border: InputBorder.none,
+                hintText: hint,
+                hintStyle: TextStyle(
+                  fontFamily: TermulFonts.mono,
+                  fontSize: 14,
+                  color: p.dim,
+                ),
+              ),
+              onSubmitted: onSubmitted,
+            ),
+          ),
+          if (helper != null && helper!.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text(
+              helper!,
+              style: TextStyle(
+                fontFamily: TermulFonts.mono,
+                fontSize: 11,
                 color: p.dim,
+                height: 1.35,
               ),
             ),
-            onSubmitted: onSubmitted,
-          ),
-        ),
-      ],
-    ),
+          ],
+        ],
+      ),
     );
   }
 }

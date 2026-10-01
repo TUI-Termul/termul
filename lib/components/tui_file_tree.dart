@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/termul_theme.dart';
+import 'tui_search_field.dart';
 import 'tui_text.dart';
 import 'tui_tooltip.dart';
 
@@ -263,11 +264,6 @@ class _ExplorerBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = TermulThemeData.of(context).palette;
-    final mono = TextStyle(
-      fontFamily: TermulFonts.mono,
-      fontSize: 12,
-      color: p.text,
-    );
 
     return SizedBox(
       height: 40,
@@ -287,18 +283,13 @@ class _ExplorerBar extends StatelessWidget {
               child: filtering && filterController != null
                   ? Padding(
                       padding: const EdgeInsets.only(left: 8),
-                      child: TextField(
-                        controller: filterController,
+                      child: TuiSearchField(
+                        controller: filterController!,
                         focusNode: filterFocusNode,
                         autofocus: true,
-                        style: mono,
-                        cursorColor: p.accent,
-                        decoration: InputDecoration(
-                          hintText: 'Filter the tree',
-                          hintStyle: mono.copyWith(color: p.dim),
-                          border: InputBorder.none,
-                          isDense: true,
-                        ),
+                        dense: true,
+                        hint: 'Filter the tree',
+                        prefixGlyph: '/',
                         onChanged: onFilterChanged,
                       ),
                     )

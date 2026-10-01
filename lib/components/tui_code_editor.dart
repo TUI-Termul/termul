@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import '../theme/termul_theme.dart';
 import 'tui_button.dart';
 import 'tui_dialog.dart';
-import 'tui_select.dart';
+import 'tui_segmented.dart';
 import 'tui_text.dart';
 
 /// Source vs rendered Markdown.
@@ -400,14 +400,20 @@ class TuiCodeEditor extends StatelessWidget {
                     ),
                   ),
                   if (showModeToggle)
-                    TuiSelect<TuiCodeViewMode>(
+                    TuiSegmented<TuiCodeViewMode>(
                       value: mode,
                       onChanged: loading || binary || errorMessage != null
                           ? null
                           : onModeChanged,
                       options: const [
-                        (TuiCodeViewMode.source, 'source'),
-                        (TuiCodeViewMode.preview, 'preview'),
+                        TuiSegmentedOption(
+                          value: TuiCodeViewMode.source,
+                          label: 'source',
+                        ),
+                        TuiSegmentedOption(
+                          value: TuiCodeViewMode.preview,
+                          label: 'preview',
+                        ),
                       ],
                     ),
                 ],

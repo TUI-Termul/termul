@@ -84,6 +84,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
               child: Row(
                 children: [
+                  const TuiLandingBack(),
                   Container(width: 10, height: 10, color: p.deep),
                   const SizedBox(width: 10),
                   Text(

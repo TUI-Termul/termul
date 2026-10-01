@@ -314,6 +314,16 @@ class _ChoiceDemos extends StatefulWidget {
 class _ChoiceDemosState extends State<_ChoiceDemos> {
   int _plan = 0;
   bool _alerts = true;
+  String _auth = 'password';
+  String _attach = 'new';
+  int _page = 1;
+  final _search = TextEditingController();
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -333,6 +343,93 @@ class _ChoiceDemosState extends State<_ChoiceDemos> {
           ),
         ),
         _GallerySection(
+          title: 'TuiSegmented',
+          child: TuiSegmented<String>(
+            value: _auth,
+            onChanged: (v) => setState(() => _auth = v),
+            options: const [
+              TuiSegmentedOption(value: 'password', label: 'Password'),
+              TuiSegmentedOption(value: 'key', label: 'Key'),
+              TuiSegmentedOption(value: 'tailscale', label: 'Tailscale'),
+            ],
+          ),
+        ),
+        _GallerySection(
+          title: 'TuiRadio',
+          child: TuiRadioGroup<String>(
+            label: 'Attach mode',
+            value: _attach,
+            onChanged: (v) => setState(() => _attach = v),
+            options: const [
+              ('new', 'New session'),
+              ('tmux', 'Attach tmux'),
+              ('reuse', 'Reuse idle tab'),
+            ],
+          ),
+        ),
+        _GallerySection(
+          title: 'TuiSearchField',
+          child: TuiSearchField(
+            controller: _search,
+            hint: 'Filter hosts…',
+            onChanged: (_) => setState(() {}),
+          ),
+        ),
+        _GallerySection(
+          title: 'TuiBanner',
+          child: Column(
+            children: [
+              TuiBanner(
+                message: 'Unsaved edits from last time.',
+                tone: TuiBannerTone.warning,
+                actions: [
+                  TuiButton(
+                    label: 'Discard',
+                    variant: TuiButtonVariant.ghost,
+                    onPressed: _noop,
+                  ),
+                  const TuiButton(label: 'Restore', onPressed: _noop),
+                ],
+              ),
+              const SizedBox(height: 8),
+              const TuiBanner(
+                message: 'relation "users" does not exist',
+                tone: TuiBannerTone.danger,
+                dense: true,
+              ),
+            ],
+          ),
+        ),
+        _GallerySection(
+          title: 'TuiHostCard',
+          child: Column(
+            children: [
+              TuiHostCard(
+                title: 'prod-west',
+                endpoint: 'deploy@10.0.0.12:22',
+                status: 'active session',
+                live: true,
+                verb: 'connect',
+                badge: const TuiBrandBadge(
+                  brand: TuiBrand.ubuntu,
+                  version: '24.04',
+                  active: true,
+                ),
+                onTap: () => showTuiToast(context, title: 'Open prod-west'),
+              ),
+              TuiHostCard(
+                title: 'staging-db',
+                endpoint: 'PostgreSQL · users@10.0.0.40',
+                status: 'via prod-west',
+                verb: 'open',
+                badge: const TuiBrandBadge(brand: TuiBrand.postgres, version: '16'),
+                onTap: () => showTuiToast(context, title: 'Open staging-db'),
+                showDivider: false,
+              ),
+            ],
+          ),
+        ),
+        _GallerySection(
           title: 'TuiSwitch',
           child: TuiSwitch(
             label: 'Agent alerts',
@@ -342,29 +439,212 @@ class _ChoiceDemosState extends State<_ChoiceDemos> {
           ),
         ),
         _GallerySection(
-          title: 'TuiDialog',
+          title: 'TuiCommandPalette',
           child: Align(
             alignment: Alignment.centerLeft,
             child: TuiButton(
-              label: 'open confirm',
-              prefix: '?',
+              label: 'open palette',
+              prefix: '⌘',
               onPressed: () async {
-                final ok = await showTuiConfirmDialog(
+                final id = await showTuiCommandPalette(
                   context,
-                  title: 'discard draft',
-                  message: 'Leave without saving?',
-                  detail: 'Your pane layout will reset to defaults.',
-                  confirmLabel: 'discard',
-                  confirmVariant: TuiButtonVariant.danger,
+                  commands: const [
+                    TuiCommand(
+                      id: 'connect',
+                      label: 'Connect to host',
+                      subtitle: 'Open a new SSH session',
+                      glyph: '▸',
+                      group: 'session',
+                      shortcut: '↵',
+                    ),
+                    TuiCommand(
+                      id: 'files',
+                      label: 'Open files',
+                      glyph: '/',
+                      group: 'session',
+                    ),
+                    TuiCommand(
+                      id: 'theme',
+                      label: 'Toggle theme',
+                      glyph: '◐',
+                      group: 'view',
+                      shortcut: 'ctrl+t',
+                    ),
+                    TuiCommand(
+                      id: 'settings',
+                      label: 'Settings',
+                      glyph: '⚙',
+                      group: 'view',
+                    ),
+                  ],
                 );
-                if (!context.mounted) return;
-                showTuiToast(
-                  context,
-                  title: ok ? 'Discarded' : 'Kept editing',
-                  type: ok ? TuiToastType.warning : TuiToastType.info,
-                );
+                if (!context.mounted || id == null) return;
+                showTuiToast(context, title: 'Ran $id');
               },
             ),
+          ),
+        ),
+        _GallerySection(
+          title: 'TuiBreadcrumbs',
+          child: TuiBreadcrumbs(
+            crumbs: TuiBreadcrumbs.fromPath('/home/deploy/app/src'),
+            onTap: (c) => showTuiToast(context, title: 'Go ${c.id}'),
+          ),
+        ),
+        _GallerySection(
+          title: 'TuiSkeleton',
+          child: const TuiSkeletonList(count: 3, dense: true),
+        ),
+        _GallerySection(
+          title: 'TuiPagination',
+          child: TuiPagination(
+            page: _page,
+            pageCount: 8,
+            pageSize: 20,
+            totalItems: 142,
+            onPageChanged: (p) => setState(() => _page = p),
+          ),
+        ),
+        _GallerySection(
+          title: 'TuiAccordion',
+          child: Column(
+            children: [
+              TuiAccordion(
+                title: 'tables',
+                meta: '12',
+                initiallyExpanded: true,
+                child: const TuiText('users · orders · sessions', tone: TuiTextTone.muted),
+              ),
+              const TuiAccordion(
+                title: 'views',
+                meta: '3',
+                child: TuiText('active_users · revenue_daily', tone: TuiTextTone.muted),
+              ),
+            ],
+          ),
+        ),
+        _GallerySection(
+          title: 'TuiDialog',
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              TuiButton(
+                label: 'confirm',
+                prefix: '?',
+                onPressed: () async {
+                  final ok = await showTuiConfirmDialog(
+                    context,
+                    title: 'discard draft',
+                    message: 'Leave without saving?',
+                    detail: 'Your pane layout will reset to defaults.',
+                    confirmLabel: 'discard',
+                    confirmVariant: TuiButtonVariant.danger,
+                  );
+                  if (!context.mounted) return;
+                  showTuiToast(
+                    context,
+                    title: ok ? 'Discarded' : 'Kept editing',
+                    type: ok ? TuiToastType.warning : TuiToastType.info,
+                  );
+                },
+              ),
+              TuiButton(
+                label: 'prompt',
+                variant: TuiButtonVariant.ghost,
+                onPressed: () async {
+                  final value = await showTuiPromptDialog(
+                    context,
+                    title: 'sudo password',
+                    fieldLabel: 'Password',
+                    helper: 'Kept only while this file is open.',
+                    obscure: true,
+                    confirmLabel: 'continue',
+                  );
+                  if (!context.mounted || value == null) return;
+                  showTuiToast(
+                    context,
+                    title: 'Submitted',
+                    body: '${value.length} chars',
+                    type: TuiToastType.success,
+                  );
+                },
+              ),
+              TuiButton(
+                label: 'choice',
+                variant: TuiButtonVariant.ghost,
+                onPressed: () async {
+                  final picked = await showTuiChoiceDialog<String>(
+                    context,
+                    title: 'attach',
+                    message: 'Pick a tmux session',
+                    options: const [
+                      (value: 'main', label: 'main', meta: '2 windows'),
+                      (value: 'dev', label: 'dev', meta: '1 window'),
+                    ],
+                  );
+                  if (!context.mounted || picked == null) return;
+                  showTuiToast(context, title: 'Attached $picked');
+                },
+              ),
+            ],
+          ),
+        ),
+        _GallerySection(
+          title: 'TuiEmptyState',
+          child: SizedBox(
+            height: 220,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: TermulThemeData.of(context).palette.border,
+                ),
+              ),
+              child: TuiEmptyState(
+                glyph: '⌀',
+                title: 'No transfers yet',
+                body:
+                    'Files you download or upload show up here, with their progress.',
+                action: TuiButton(
+                  label: 'open files',
+                  variant: TuiButtonVariant.ghost,
+                  onPressed: () => showTuiToast(
+                    context,
+                    title: 'Open files',
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+        _GallerySection(
+          title: 'TuiListRow',
+          child: Column(
+            children: [
+              TuiListRow(
+                leadingGlyph: '·',
+                title: 'prod-west',
+                subtitle: 'deploy@10.0.0.12 · last seen 2m',
+                trailing: const TuiText('▸', tone: TuiTextTone.dim),
+                onTap: () => showTuiToast(context, title: 'Open prod-west'),
+                showDivider: true,
+              ),
+              TuiListRow(
+                leadingGlyph: '·',
+                title: 'staging',
+                subtitle: 'ops@10.0.0.40 · idle',
+                selected: true,
+                trailing: const TuiText('▸', tone: TuiTextTone.accent),
+                onTap: () {},
+                showDivider: true,
+              ),
+              TuiListRow(
+                leadingGlyph: '·',
+                title: 'archived-lab',
+                subtitle: 'deleted host',
+                enabled: false,
+              ),
+            ],
           ),
         ),
         _GallerySection(
@@ -1017,7 +1297,7 @@ class _MagicKeyDemo extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(12),
             child: Text(
-              'Long-press the ⏎ disc for rings · drag to dock.\n'
+              'Long-press ⏎ for a quarter fan (3 tiers) · drag to dock.\n'
               'Touch-only — omit on desktop.',
               style: TextStyle(
                 fontFamily: TermulFonts.mono,
@@ -1029,7 +1309,9 @@ class _MagicKeyDemo extends StatelessWidget {
           ),
           Positioned.fill(
             child: TuiMagicKey(
-              initialSpot: const Offset(0.82, 0.72),
+              shape: TuiMagicKeyShape.quarter,
+              tiers: 3,
+              initialSpot: const Offset(0.92, 0.88),
               onEmit: (label) => showTuiToast(
                 context,
                 title: 'Emit $label',

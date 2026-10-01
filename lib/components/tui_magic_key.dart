@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../theme/termul_palette.dart';
 import '../theme/termul_theme.dart';
 
 /// One slot on the magic key's ring — label only; host maps to terminal bytes.
@@ -11,6 +12,15 @@ typedef TuiMagicKeyAction = ({String label});
 
 /// Tap on the floating button emits this label (Enter / CR).
 const tuiMagicEnterLabel = '⏎';
+
+/// Full-circle vs corner quarter-arc picker.
+enum TuiMagicKeyShape {
+  /// Classic two-ring compass (8 primaries + sub-keys behind each).
+  ring,
+
+  /// Concentric quarter-arcs that park in a corner and hold many flat keys.
+  quarter,
+}
 
 /// The ring, clockwise from north.
 ///
@@ -38,6 +48,31 @@ const Map<String, List<TuiMagicKeyAction>> tuiMagicSubKeys = {
   '←': [(label: 'HOME'), (label: 'W←')],
   '^D': [(label: '^L'), (label: '^R')],
 };
+
+/// Flat key set for [TuiMagicKeyShape.quarter] — sshbox-style shell keys,
+/// ordered for reading along each arc (inner → outer by layout weights).
+const List<TuiMagicKeyAction> tuiMagicQuarterKeys = [
+  (label: '↑'),
+  (label: '←'),
+  (label: '↓'),
+  (label: '→'),
+  (label: 'ESC'),
+  (label: 'TAB'),
+  (label: '^C'),
+  (label: '^D'),
+  (label: 'HOME'),
+  (label: 'END'),
+  (label: 'PGUP'),
+  (label: 'PGDN'),
+  (label: 'W←'),
+  (label: 'W→'),
+  (label: '⇧TAB'),
+  (label: 'ESC²'),
+  (label: '^Z'),
+  (label: '^\\'),
+  (label: '^L'),
+  (label: '^R'),
+];
 
 /// Default dead zone before a drag aims at a petal.
 const double tuiMagicDeadZone = 18;
@@ -207,8 +242,196 @@ int? tuiMagicPetalFor(
   return nearestGap <= spacing / 2 + 1e-6 ? nearest : null;
 }
 
-/// Floating Enter that opens two radial rings on long-press; drag to park /
+// ── Quarter-circle multi-tier layout ──────────────────────────────────────
+
+/// One petal in a quarter-arc layout.
+typedef TuiMagicQuarterSlot = ({double angle, double radius, int tier});
+
+/// How many keys each concentric tier should hold for [total] keys across
+/// [tiers] arcs. Outer tiers get more slots (longer arc length).
+List<int> tuiMagicTierCounts(int total, int tiers) {
+  final n = math.max(1, tiers);
+  if (total <= 0) return List<int>.filled(n, 0);
+  if (total <= n) {
+    return [for (var i = 0; i < n; i++) i < total ? 1 : 0];
+  }
+
+  final weights = [for (var i = 1; i <= n; i++) i];
+  final sum = weights.reduce((a, b) => a + b);
+  final counts = [
+    for (final w in weights) math.max(1, (total * w / sum).floor()),
+  ];
+  var assigned = counts.reduce((a, b) => a + b);
+  var tip = n - 1;
+  while (assigned < total) {
+    counts[tip]++;
+    assigned++;
+    tip = (tip - 1 + n) % n;
+  }
+  while (assigned > total) {
+    var trimmed = false;
+    for (var j = n - 1; j >= 0; j--) {
+      if (counts[j] > 1) {
+        counts[j]--;
+        assigned--;
+        trimmed = true;
+        break;
+      }
+    }
+    if (!trimmed) break;
+  }
+  return counts;
+}
+
+/// Quarter (π/2) opening into free screen space from [centre].
+({double start, double sweep}) tuiMagicQuarterArc(
+  Offset centre,
+  Size bounds,
+) {
+  final right = centre.dx >= bounds.width / 2;
+  final bottom = centre.dy >= bounds.height / 2;
+  // Clockwise from north: 0 N, π/2 E, π S, 3π/2 W.
+  if (right && bottom) return (start: 3 * math.pi / 2, sweep: math.pi / 2); // W→N
+  if (!right && bottom) return (start: 0, sweep: math.pi / 2); // N→E
+  if (!right && !bottom) return (start: math.pi / 2, sweep: math.pi / 2); // E→S
+  return (start: math.pi, sweep: math.pi / 2); // S→W
+}
+
+double _radiusForChord(int count, double sweep, double petal, double gap) {
+  if (count <= 1) return petal;
+  final spacing = sweep / (count - 1);
+  final sinHalf = math.sin(spacing / 2);
+  if (sinHalf < 1e-6) return 400;
+  return (petal + gap) / (2 * sinHalf);
+}
+
+/// Concentric quarter-arcs of petals. Responsive: grows radii / shrinks
+/// petals so neighbours do not overlap and every petal stays on-screen.
+({
+  List<TuiMagicQuarterSlot> slots,
+  double start,
+  double sweep,
+  List<double> radii,
+  double petal,
+  double outer,
+}) tuiMagicQuarterLayout({
+  required Offset centre,
+  required Size bounds,
+  required int count,
+  int tiers = 3,
+  double petal = 40,
+  double gap = 8,
+  double minRadius = 58,
+  double maxRadius = 300,
+}) {
+  final arc = tuiMagicQuarterArc(centre, bounds);
+  final tierN = math.max(1, tiers);
+  final counts = tuiMagicTierCounts(count, tierN);
+  final inset = petal / 2 + 4;
+
+  var size = petal;
+  List<double> radii = [];
+  List<TuiMagicQuarterSlot> slots = [];
+
+  for (var attempt = 0; attempt < 8; attempt++) {
+    radii = [];
+    var r = minRadius;
+    for (var t = 0; t < tierN; t++) {
+      final need = _radiusForChord(counts[t], arc.sweep, size, gap);
+      if (t == 0) {
+        r = math.max(minRadius, need);
+      } else {
+        r = math.max(radii[t - 1] + size + gap, need);
+      }
+      r = math.min(r, maxRadius);
+      radii.add(r);
+    }
+
+    slots = [];
+    var index = 0;
+    for (var t = 0; t < tierN; t++) {
+      final n = counts[t];
+      if (n <= 0) continue;
+      final spacing = n == 1 ? 0.0 : arc.sweep / (n - 1);
+      for (var j = 0; j < n; j++) {
+        if (index >= count) break;
+        slots.add((
+          angle: (arc.start + spacing * j) % (2 * math.pi),
+          radius: radii[t],
+          tier: t,
+        ));
+        index++;
+      }
+    }
+
+    bool onScreen(TuiMagicQuarterSlot s) {
+      final x = centre.dx + s.radius * math.sin(s.angle);
+      final y = centre.dy - s.radius * math.cos(s.angle);
+      return x >= inset &&
+          x <= bounds.width - inset &&
+          y >= inset &&
+          y <= bounds.height - inset;
+    }
+
+    final ok = slots.every(onScreen);
+    final withinCap = radii.isEmpty || radii.last <= maxRadius + 1e-6;
+    if (ok && withinCap) break;
+    size = math.max(28, size - 2);
+  }
+
+  return (
+    slots: slots,
+    start: arc.start,
+    sweep: arc.sweep,
+    radii: radii,
+    petal: size,
+    outer: radii.isEmpty ? minRadius : radii.last,
+  );
+}
+
+/// Nearest quarter petal for a drag from the hub, or null in the dead zone /
+/// outside the fan.
+int? tuiMagicQuarterPetalFor(
+  Offset offset,
+  List<TuiMagicQuarterSlot> slots, {
+  double start = 0,
+  double sweep = math.pi / 2,
+  double deadZone = tuiMagicDeadZone,
+  double hitSlop = 28,
+}) {
+  if (slots.isEmpty || offset.distance < deadZone) return null;
+
+  final pointing = math.atan2(offset.dx, -offset.dy);
+  var along = (pointing - start) % (2 * math.pi);
+  if (along < 0) along += 2 * math.pi;
+  // Small tolerance past the fan edges.
+  const pad = 0.2;
+  if (along > sweep + pad && along < 2 * math.pi - pad) return null;
+
+  var best = 0;
+  var bestDist = double.infinity;
+  for (var i = 0; i < slots.length; i++) {
+    final at = Offset(
+      slots[i].radius * math.sin(slots[i].angle),
+      -slots[i].radius * math.cos(slots[i].angle),
+    );
+    final d = (offset - at).distance;
+    if (d < bestDist) {
+      bestDist = d;
+      best = i;
+    }
+  }
+  // Prefer a nearby petal; still snap to nearest when deep into the fan.
+  if (bestDist <= hitSlop) return best;
+  if (offset.distance >= slots[best].radius - hitSlop) return best;
+  return null;
+}
+
+/// Floating Enter that opens a radial key picker on long-press; drag to park /
 /// dock against a side. Touch-only affordance — omit on desktop.
+///
+/// [shape] selects full [TuiMagicKeyShape.ring] (two hierarchical rings) or
+/// [TuiMagicKeyShape.quarter] (flat keys on [tiers] concentric quarter-arcs).
 ///
 /// Place with [Positioned.fill] over the terminal; only the button hit-tests.
 /// [onEmit] receives key labels (`⏎`, `↑`, `ESC`, `PGUP`, …) — host maps to
@@ -222,7 +445,10 @@ class TuiMagicKey extends StatefulWidget {
     this.onSpotChanged,
     this.keys = tuiMagicKeys,
     this.subKeys = tuiMagicSubKeys,
+    this.quarterKeys = tuiMagicQuarterKeys,
     this.enterLabel = tuiMagicEnterLabel,
+    this.shape = TuiMagicKeyShape.ring,
+    this.tiers = 3,
   });
 
   final void Function(String label) onEmit;
@@ -234,9 +460,20 @@ class TuiMagicKey extends StatefulWidget {
   /// `(spot, docked)` whenever the button settles after a move/reveal.
   final void Function(Offset spot, bool docked)? onSpotChanged;
 
+  /// Ring-1 keys when [shape] is [TuiMagicKeyShape.ring].
   final List<TuiMagicKeyAction> keys;
   final Map<String, List<TuiMagicKeyAction>> subKeys;
+
+  /// Flat key list when [shape] is [TuiMagicKeyShape.quarter].
+  final List<TuiMagicKeyAction> quarterKeys;
+
   final String enterLabel;
+
+  /// Full compass rings, or a corner quarter with [tiers] concentric arcs.
+  final TuiMagicKeyShape shape;
+
+  /// Number of concentric arcs for [TuiMagicKeyShape.quarter] (1–6).
+  final int tiers;
 
   @override
   State<TuiMagicKey> createState() => _TuiMagicKeyState();
@@ -258,6 +495,7 @@ class _TuiMagicKeyState extends State<TuiMagicKey> {
   late bool _docked = widget.initialDocked;
 
   bool get _onLeft => _spot.dx < 0.5;
+  bool get _quarter => widget.shape == TuiMagicKeyShape.quarter;
 
   Duration _glide = Duration.zero;
   Offset _anchor = Offset.zero;
@@ -276,6 +514,15 @@ class _TuiMagicKeyState extends State<TuiMagicKey> {
   late ({List<double> angles, double radius, double outer, double spread})
       _ring;
 
+  late ({
+    List<TuiMagicQuarterSlot> slots,
+    double start,
+    double sweep,
+    List<double> radii,
+    double petal,
+    double outer,
+  }) _quarterRing;
+
   double get _halfway => (_ring.radius + _ring.outer) / 2;
 
   double get _ringTwoFrom => !_docked
@@ -283,6 +530,8 @@ class _TuiMagicKeyState extends State<TuiMagicKey> {
       : tuiMagicDeadZone +
           _tuckedRingStep -
           (_child != null ? _tuckedRingSlack : 0);
+
+  int get _tierCount => widget.tiers.clamp(1, 6);
 
   @override
   void initState() {
@@ -319,6 +568,23 @@ class _TuiMagicKeyState extends State<TuiMagicKey> {
       ];
 
   void _aimAt(Offset drag) {
+    if (_quarter) {
+      final aim = tuiMagicQuarterPetalFor(
+        drag,
+        _quarterRing.slots,
+        start: _quarterRing.start,
+        sweep: _quarterRing.sweep,
+        hitSlop: _quarterRing.petal * 0.85,
+      );
+      if (aim == _aim) return;
+      if (aim != null) HapticFeedback.selectionClick();
+      setState(() {
+        _aim = aim;
+        _child = null;
+      });
+      return;
+    }
+
     var aim = tuiMagicPetalFor(drag, _ring.angles);
     int? child;
     if (aim != null && drag.distance >= _ringTwoFrom) {
@@ -353,22 +619,39 @@ class _TuiMagicKeyState extends State<TuiMagicKey> {
   }
 
   void _openRing(LongPressStartDetails _) {
-    _ring = tuiMagicRingLayout(
-      centre: _centre,
-      bounds: _bounds,
-      count: widget.keys.length,
-      petal: _petal,
-    );
+    if (_quarter) {
+      _quarterRing = tuiMagicQuarterLayout(
+        centre: _centre,
+        bounds: _bounds,
+        count: widget.quarterKeys.length,
+        tiers: _tierCount,
+        petal: _petal,
+      );
+    } else {
+      _ring = tuiMagicRingLayout(
+        centre: _centre,
+        bounds: _bounds,
+        count: widget.keys.length,
+        petal: _petal,
+      );
+    }
     HapticFeedback.mediumImpact();
     setState(() {
       _picking = true;
       _aim = null;
+      _child = null;
     });
   }
 
   void _releaseRing() {
     final aim = _aim, child = _child;
     _closeRing();
+    if (_quarter) {
+      if (aim != null && aim >= 0 && aim < widget.quarterKeys.length) {
+        widget.onEmit(widget.quarterKeys[aim].label);
+      }
+      return;
+    }
     if (child != null) {
       widget.onEmit(_subKeysOf(aim!)[child].label);
     } else if (aim != null) {
@@ -457,23 +740,26 @@ class _TuiMagicKeyState extends State<TuiMagicKey> {
 
         return Stack(
           children: [
-            if (_picking) ...[
-              _band(2 * _ring.outer - _halfway, p.selection),
-              _band(_halfway, p.surface.withValues(alpha: 0.85)),
-              for (var i = 0; i < widget.keys.length; i++) ...[
-                _petalAt(
-                  _out(_centre, _ring.angles[i], _ring.radius),
-                  widget.keys[i].label,
-                  aimed: i == _aim && _child == null,
-                ),
-                for (final (j, angle) in _subAnglesOf(i).indexed)
+            if (_picking)
+              if (_quarter)
+                ..._quarterPetals(p)
+              else ...[
+                _band(2 * _ring.outer - _halfway, p.selection),
+                _band(_halfway, p.surface.withValues(alpha: 0.85)),
+                for (var i = 0; i < widget.keys.length; i++) ...[
                   _petalAt(
-                    _out(_centre, angle, _ring.outer),
-                    _subKeysOf(i)[j].label,
-                    aimed: i == _aim && j == _child,
+                    _out(_centre, _ring.angles[i], _ring.radius),
+                    widget.keys[i].label,
+                    aimed: i == _aim && _child == null,
                   ),
+                  for (final (j, angle) in _subAnglesOf(i).indexed)
+                    _petalAt(
+                      _out(_centre, angle, _ring.outer),
+                      _subKeysOf(i)[j].label,
+                      aimed: i == _aim && j == _child,
+                    ),
+                ],
               ],
-            ],
             AnimatedPositioned(
               key: const ValueKey('tui-magic-key-button'),
               duration: _glide,
@@ -483,6 +769,7 @@ class _TuiMagicKeyState extends State<TuiMagicKey> {
               width: _size,
               height: _size,
               child: Semantics(
+                excludeSemantics: true,
                 label: _docked ? 'Show Enter key' : 'Send Enter',
                 button: true,
                 child: GestureDetector(
@@ -522,6 +809,31 @@ class _TuiMagicKeyState extends State<TuiMagicKey> {
     );
   }
 
+  List<Widget> _quarterPetals(TermulPalette p) {
+    final outer = _quarterRing.outer + _quarterRing.petal / 2;
+    final petals = <Widget>[
+      _quarterBand(outer, p.selection),
+      for (final r in _quarterRing.radii)
+        _quarterBand(
+          r + _quarterRing.petal / 2,
+          p.surface.withValues(alpha: 0.35),
+          strokeOnly: true,
+        ),
+    ];
+    for (var i = 0; i < _quarterRing.slots.length; i++) {
+      final slot = _quarterRing.slots[i];
+      petals.add(
+        _petalAt(
+          _out(_centre, slot.angle, slot.radius),
+          widget.quarterKeys[i].label,
+          aimed: i == _aim,
+          size: _quarterRing.petal,
+        ),
+      );
+    }
+    return petals;
+  }
+
   Widget _band(double radius, Color color) => Positioned(
         left: _centre.dx - radius,
         top: _centre.dy - radius,
@@ -540,17 +852,106 @@ class _TuiMagicKeyState extends State<TuiMagicKey> {
         ),
       );
 
-  Widget _petalAt(Offset at, String label, {required bool aimed}) {
+  Widget _quarterBand(
+    double radius,
+    Color color, {
+    bool strokeOnly = false,
+  }) {
+    final size = radius * 2;
     return Positioned(
-      left: at.dx - _petal / 2,
-      top: at.dy - _petal / 2,
-      width: _petal,
-      height: _petal,
+      left: _centre.dx - radius,
+      top: _centre.dy - radius,
+      width: size,
+      height: size,
+      child: IgnorePointer(
+        child: CustomPaint(
+          painter: _QuarterArcPainter(
+            start: _quarterRing.start,
+            sweep: _quarterRing.sweep,
+            color: strokeOnly ? color.withValues(alpha: 0) : color.withValues(alpha: 0.45),
+            border: TermulThemeData.of(context).palette.border,
+            strokeOnly: strokeOnly,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _petalAt(
+    Offset at,
+    String label, {
+    required bool aimed,
+    double size = _petal,
+  }) {
+    return Positioned(
+      left: at.dx - size / 2,
+      top: at.dy - size / 2,
+      width: size,
+      height: size,
       child: IgnorePointer(
         child: _Petal(label: label, aimed: aimed),
       ),
     );
   }
+}
+
+class _QuarterArcPainter extends CustomPainter {
+  _QuarterArcPainter({
+    required this.start,
+    required this.sweep,
+    required this.color,
+    required this.border,
+    this.strokeOnly = false,
+  });
+
+  final double start;
+  final double sweep;
+  final Color color;
+  final Color border;
+  final bool strokeOnly;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final centre = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2;
+    // Compass 0 = north clockwise → canvas 0 = east CCW. Negate sweep so the
+    // painted wedge matches the petal angles.
+    final canvasStart = start - math.pi / 2;
+    final canvasSweep = -sweep;
+    final rect = Rect.fromCircle(center: centre, radius: radius);
+
+    if (!strokeOnly) {
+      final fill = Path()
+        ..moveTo(centre.dx, centre.dy)
+        ..arcTo(rect, canvasStart, canvasSweep, false)
+        ..close();
+      canvas.drawPath(
+        fill,
+        Paint()
+          ..color = color
+          ..style = PaintingStyle.fill,
+      );
+    }
+
+    canvas.drawArc(
+      rect,
+      canvasStart,
+      canvasSweep,
+      false,
+      Paint()
+        ..color = border
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _QuarterArcPainter old) =>
+      old.start != start ||
+      old.sweep != sweep ||
+      old.color != color ||
+      old.border != border ||
+      old.strokeOnly != strokeOnly;
 }
 
 class _Button extends StatelessWidget {

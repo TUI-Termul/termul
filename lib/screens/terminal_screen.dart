@@ -35,6 +35,7 @@ class _TerminalScreenState extends State<TerminalScreen>
   TerminalInputMode _mode = TerminalInputMode.tty;
   bool _promptFullscreen = false;
   bool _ttyKeyboardVisible = true;
+  bool _magicKeyVisible = false;
 
   final List<String> _history = [];
   int _historyIndex = -1;
@@ -126,6 +127,50 @@ class _TerminalScreenState extends State<TerminalScreen>
     _tty.selection = const TextSelection.collapsed(offset: 0);
     setState(() {});
     _scrollToEnd();
+  }
+
+  void _onMagicEmit(String label) {
+    if (label == tuiMagicEnterLabel || label == '⏎') {
+      _submitTty();
+      return;
+    }
+    switch (label) {
+      case '↑':
+        _historyUp(_tty);
+      case '↓':
+        _historyDown(_tty);
+      case '←':
+        final i = (_tty.selection.baseOffset - 1).clamp(0, _tty.text.length);
+        _tty.selection = TextSelection.collapsed(offset: i);
+        setState(() {});
+      case '→':
+        final i = (_tty.selection.baseOffset + 1).clamp(0, _tty.text.length);
+        _tty.selection = TextSelection.collapsed(offset: i);
+        setState(() {});
+      case 'TAB':
+        _insertTty('\t');
+      case 'HOME':
+        _tty.selection = const TextSelection.collapsed(offset: 0);
+        setState(() {});
+      case 'END':
+        _tty.selection = TextSelection.collapsed(offset: _tty.text.length);
+        setState(() {});
+      default:
+        showTuiToast(context, title: 'Emit $label');
+    }
+  }
+
+  void _insertTty(String text) {
+    final value = _tty.text;
+    final sel = _tty.selection;
+    final start = sel.isValid ? sel.start : value.length;
+    final end = sel.isValid ? sel.end : value.length;
+    final next = value.replaceRange(start, end, text);
+    _tty.value = TextEditingValue(
+      text: next,
+      selection: TextSelection.collapsed(offset: start + text.length),
+    );
+    setState(() {});
   }
 
   void _historyUp(TextEditingController target) {
@@ -263,42 +308,58 @@ class _TerminalScreenState extends State<TerminalScreen>
             else ...[
               Expanded(
                 flex: 1,
-                child: ColoredBox(
-                  color: term.panel,
-                  child: ListView.builder(
-                    controller: _scroll,
-                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-                    itemCount: tab.lines.length + (isChat ? 0 : 1),
-                    itemBuilder: (context, i) {
-                      if (!isChat && i == tab.lines.length) {
-                        return GestureDetector(
-                          onTap: () => setState(() => _ttyKeyboardVisible = true),
-                          child: _LiveTtyLine(
-                            text: _tty.text,
-                            caretIndex: _tty.selection.isValid
-                                ? _tty.selection.baseOffset
-                                : _tty.text.length,
-                            blink: _caretBlink,
+                child: Stack(
+                  children: [
+                    ColoredBox(
+                      color: term.panel,
+                      child: ListView.builder(
+                        controller: _scroll,
+                        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                        itemCount: tab.lines.length + (isChat ? 0 : 1),
+                        itemBuilder: (context, i) {
+                          if (!isChat && i == tab.lines.length) {
+                            return GestureDetector(
+                              onTap: () =>
+                                  setState(() => _ttyKeyboardVisible = true),
+                              child: _LiveTtyLine(
+                                text: _tty.text,
+                                caretIndex: _tty.selection.isValid
+                                    ? _tty.selection.baseOffset
+                                    : _tty.text.length,
+                                blink: _caretBlink,
+                                palette: term,
+                                fontSize: fontSize,
+                                fontFamily: fontFamily,
+                              ),
+                            );
+                          }
+                          return _Line(
+                            line: tab.lines[i],
                             palette: term,
                             fontSize: fontSize,
                             fontFamily: fontFamily,
-                          ),
-                        );
-                      }
-                      return _Line(
-                        line: tab.lines[i],
-                        palette: term,
-                        fontSize: fontSize,
-                        fontFamily: fontFamily,
-                      );
-                    },
-                  ),
+                          );
+                        },
+                      ),
+                    ),
+                    if (!isChat && _magicKeyVisible)
+                      Positioned.fill(
+                        child: TuiMagicKey(
+                          shape: TuiMagicKeyShape.quarter,
+                          tiers: 3,
+                          onEmit: _onMagicEmit,
+                        ),
+                      ),
+                  ],
                 ),
               ),
               if (isChat)
                 _CompactChat(
                   mode: _mode,
                   onModeChanged: _setMode,
+                  magicKeyVisible: _magicKeyVisible,
+                  onToggleMagicKey: () =>
+                      setState(() => _magicKeyVisible = !_magicKeyVisible),
                   controller: _chat,
                   focusNode: _chatFocus,
                   onSubmit: _submitChat,
@@ -328,6 +389,9 @@ class _TerminalScreenState extends State<TerminalScreen>
                         () => _ttyKeyboardVisible = !_ttyKeyboardVisible,
                       ),
                       keyboardVisible: _ttyKeyboardVisible,
+                      magicKeyVisible: _magicKeyVisible,
+                      onToggleMagicKey: () =>
+                          setState(() => _magicKeyVisible = !_magicKeyVisible),
                     ),
                   ),
                 ),
@@ -355,6 +419,8 @@ class _InputModeHeader extends StatelessWidget {
     this.onExpand,
     this.onToggleKeyboard,
     this.keyboardVisible = false,
+    this.magicKeyVisible = false,
+    this.onToggleMagicKey,
   });
 
   final TerminalInputMode mode;
@@ -362,6 +428,8 @@ class _InputModeHeader extends StatelessWidget {
   final VoidCallback? onExpand;
   final VoidCallback? onToggleKeyboard;
   final bool keyboardVisible;
+  final bool magicKeyVisible;
+  final VoidCallback? onToggleMagicKey;
 
   @override
   Widget build(BuildContext context) {
@@ -381,6 +449,22 @@ class _InputModeHeader extends StatelessWidget {
           tooltip: 'Chat',
           onTap: () => onModeChanged(TerminalInputMode.chat),
         ),
+        if (onToggleMagicKey != null) ...[
+          const SizedBox(width: 6),
+          _HeaderIconButton(
+            icon: Icons.adjust,
+            selected: magicKeyVisible && mode == TerminalInputMode.tty,
+            tooltip: magicKeyVisible ? 'Hide magic key' : 'Show magic key',
+            onTap: () {
+              if (mode != TerminalInputMode.tty) {
+                onModeChanged(TerminalInputMode.tty);
+                if (!magicKeyVisible) onToggleMagicKey!();
+                return;
+              }
+              onToggleMagicKey!();
+            },
+          ),
+        ],
         const Spacer(),
         if (onToggleKeyboard != null)
           Tooltip(
@@ -545,6 +629,8 @@ class _CompactChat extends StatelessWidget {
     required this.focusNode,
     required this.onSubmit,
     required this.onExpand,
+    this.magicKeyVisible = false,
+    this.onToggleMagicKey,
   });
 
   final TerminalInputMode mode;
@@ -553,6 +639,8 @@ class _CompactChat extends StatelessWidget {
   final FocusNode focusNode;
   final ValueChanged<String> onSubmit;
   final VoidCallback onExpand;
+  final bool magicKeyVisible;
+  final VoidCallback? onToggleMagicKey;
 
   @override
   Widget build(BuildContext context) {
@@ -573,6 +661,8 @@ class _CompactChat extends StatelessWidget {
               mode: mode,
               onModeChanged: onModeChanged,
               onExpand: onExpand,
+              magicKeyVisible: magicKeyVisible,
+              onToggleMagicKey: onToggleMagicKey,
             ),
             const SizedBox(height: 10),
             Row(
